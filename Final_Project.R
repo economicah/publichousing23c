@@ -1,4 +1,4 @@
-
+#testing what a branch does
 #install.packages("ggplot2")
 library(ggplot2)
 #install.packages("dplyr")
@@ -19,6 +19,8 @@ pha[pha == -5] <- NA
 hcv <- filter(pha, pha$program == 3)
 # add total_rent as a new variable
 hcv <- mutate(hcv, total_rent  = rent_per_month + spending_per_month)
+min(hcv$total_rent, na.rm=TRUE)
+
 # add monthly income as a new variable
 hcv <- mutate(hcv, income_monthly  = hh_income/12)
 # add rent_burden as a new variable (total rent/monthly income)
@@ -74,6 +76,8 @@ hcv[idx, c(71, 77, 78)]
 
 # plotted just to see what it looks like
 ggplot(hcv) + geom_point(aes(x=rent_burden, y=Total.Compensation))
+ggplot(hcv) + geom_boxplot(aes(x=division, y=rent_burden), na.rm = TRUE)
+ggplot(hcv) + geom_boxplot(aes(x=division, y=tpoverty), na.rm = TRUE)
 
 
 hist(hcv$Total.Compensation, breaks = "FD", freq = FALSE)
