@@ -36,17 +36,17 @@ hcv <- left_join(hcv, states_fin, by = "state")
 # load salary data
 salaries <- read.csv("Desktop/MathE23c/Term Project/2014EXEC_COMP.csv"); head(salaries)
 # keep only max salary for each PHA
-salaries_max <- salaries %>% group_by(PHA.Code) %>% top_n(1, Total.Compensation)
+# dollar signs are a problem though; need to remove $ and resulting comma
+strip_dol <- function(x) as.numeric((gsub("\\,", "", gsub("\\$", "", x))))
+colnames(salaries)
+salaries[,4:10] <- sapply(salaries[,4:10], strip_dol)
+salaries_max <- salaries %>% group_by(PHA.Code) %>% top_n(1, Total.Compensation) %>% 
+  distinct(Total.Compensation, .keep_all = TRUE)
 
 # add salary data to HCV data frame
 head(hcv$code)
 salaries_max <- rename(salaries_max, code = PHA.Code)
 hcv <- left_join(hcv, salaries_max, by = "code")
-# dollar signs are a problem; need to remove $ and resulting comma
-strip_dol <- function(x) as.numeric((gsub("\\,", "", gsub("\\$", "", x))))
-colnames(hcv)
-hcv[,81:87] <- sapply(hcv[,81:87], strip_dol)
-head(hcv)
 plot(hcv$hh_income, hcv$Total.Compensation)
 # salaries by tenant income
 ggplot(hcv) + geom_point(aes(x=hh_income, y=Total.Compensation)) + 
