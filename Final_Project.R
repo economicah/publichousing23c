@@ -16,7 +16,7 @@ pha[pha == -1] <- NA
 pha[pha == -4] <- NA
 pha[pha == -5] <- NA
 
-# filtering to show only "Housing Choice Voucher" programs (program = 3)
+# filtering to keep only "Housing Choice Voucher" programs (program = 3)
 hcv <- filter(pha, pha$program == 3)
 # add total_rent as a new variable
 hcv <- mutate(hcv, total_rent  = rent_per_month + spending_per_month)
@@ -25,28 +25,28 @@ hcv <- mutate(hcv, income_monthly  = hh_income/12)
 # add rent_burden as a new variable (total rent/monthly income)
 hcv <- mutate(hcv, rent_burden  = total_rent/income_monthly)
 hist(hcv$rent_burden, breaks = "FD", xlim = c(0,2))
-max(hcv$rent_burden, na.rm = TRUE) # no longer getting a random max of 24!
+max(hcv$rent_burden, na.rm = TRUE) 
 
 # add census regions to data frame
-library(noncensus)
 data(states)
+# keep only "State", "Region", and "Division" columns
 states_fin <- states[, c(1, 3, 4)]
 hcv <- left_join(hcv, states_fin, by = "state")
 
 # load salary data
-salaries <- read.csv("Desktop/MathE23c/Term Project/2014EXEC_COMP.csv"); head(salaries)
+salaries <- read.csv("2014EXEC_COMP.csv"); head(salaries)
 # keep only max salary for each PHA
-salaries_max <- salaries %>% group_by(PHA.Code) %>% top_n(1, Total.Compensation)
+# class of salary data is a problem though; need to remove $ and resulting comma
+strip_dol <- function(x) as.numeric((gsub("\\,", "", gsub("\\$", "", x))))
+colnames(salaries)
+salaries[,4:10] <- sapply(salaries[,4:10], strip_dol)
+salaries_max <- salaries %>% group_by(PHA.Code) %>% top_n(1, Total.Compensation) %>% 
+  distinct(salaries, PHA.Code, Total.Compensation, .keep_all = TRUE)
 
 # add salary data to HCV data frame
 head(hcv$code)
 salaries_max <- rename(salaries_max, code = PHA.Code)
 hcv <- left_join(hcv, salaries_max, by = "code")
-# dollar signs are a problem; need to remove $ and resulting comma
-strip_dol <- function(x) as.numeric((gsub("\\,", "", gsub("\\$", "", x))))
-colnames(hcv)
-hcv[,81:87] <- sapply(hcv[,81:87], strip_dol)
-head(hcv)
 plot(hcv$hh_income, hcv$Total.Compensation)
 # salaries by tenant income
 ggplot(hcv) + geom_point(aes(x=hh_income, y=Total.Compensation)) + 
