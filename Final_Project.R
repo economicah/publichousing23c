@@ -1,4 +1,8 @@
+rm(list = ls()) #wipes out your environment
+setwd("~/Documents/Harvard Extension School/Math E-23C/Data/")
 
+#install.packages("doBy")
+library(doBy)
 
 #install.packages("ggplot2")
 library(ggplot2)
