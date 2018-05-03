@@ -31,6 +31,11 @@ pha[pha == -5] <- NA
 # extract subset of only "Housing Choice Voucher" programs (program = 3)
 hcv <- filter(pha, pha$program == 3)
 
+# add number of client households as a new variable
+hcv <- mutate(hcv, num_hh = total_units * (pct_occupied/100))
+#mean(hcv$total_rent, na.rm = TRUE);min(hcv$total_rent, na.rm = TRUE);max(hcv$total_rent, na.rm = TRUE)
+
+
 # add total_rent as a new variable
 hcv <- mutate(hcv, total_rent  = rent_per_month + spending_per_month)
 #mean(hcv$total_rent, na.rm = TRUE);min(hcv$total_rent, na.rm = TRUE);max(hcv$total_rent, na.rm = TRUE)
