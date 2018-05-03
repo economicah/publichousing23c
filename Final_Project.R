@@ -61,6 +61,7 @@ colnames(salaries)
 salaries[,4:10] <- sapply(salaries[,4:10], strip_dol)
 salaries_max <- salaries %>% group_by(PHA.Code) %>% top_n(1, Total.Compensation) %>% 
   distinct(salaries, PHA.Code, Total.Compensation, .keep_all = TRUE)
+#mean(salaries_max$Total.Compensation); min(salaries_max$Total.Compensation); max(salaries_max$Total.Compensation)
 
 # add salary data to HCV data frame
 head(hcv$code)
