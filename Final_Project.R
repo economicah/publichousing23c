@@ -1,6 +1,6 @@
 # you can delete this after reading it, but HELLO
 # I'm very hot right now. Don't like this heat.
-
+#this is my test change
 rm(list = ls()) #wipes out your environment
 setwd("~/Documents/Harvard Extension School/Math E-23C/Data/")
 
