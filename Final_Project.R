@@ -1,7 +1,7 @@
 #------------------------------------------------------------
 #                           Misc
 #------------------------------------------------------------
-
+#!diagnostics off
 rm(list = ls()) #wipes out your environment
 setwd("~/Documents/Harvard Extension School/Math E-23C/Data/")
 
@@ -19,7 +19,7 @@ library(maps)
 library(noncensus)
 
 #------------------------------------------------------------
-#                           Build Dataset
+#                           Clean & Build Dataset
 #------------------------------------------------------------
 
 #public housing authority data from 2014
@@ -63,21 +63,26 @@ salaries[,4:10] <- sapply(salaries[,4:10], strip_dol)
 # generate dataset of max salary for each PHA
 salaries_max <- salaries %>% group_by(PHA.Code) %>% top_n(1, Total.Compensation) %>% 
   distinct(salaries, PHA.Code, Total.Compensation, .keep_all = TRUE)
-salaries_max <- rename(salaries_max, code = PHA.Code)
 
 # recode missing compensation data as NA rather than 0 and rename
 salaries_max$Total.Compensation[salaries_max$Total.Compensation == 0] <- NA
-salaries_max <- rename(salaries_max, largest_compensation = Total.Compensation)
-#mean(salaries_max$Total.Compensation,na.rm = TRUE); min(salaries_max$Total.Compensation,na.rm = TRUE); max(salaries_max$Total.Compensation,na.rm = TRUE)
+#salaries_max <- rename(salaries_max, c("Total.Compensation"="largest_compensation"))
+#mean(salaries_max$largest_compensation,na.rm = TRUE); min(salaries_max$largest_compensation,na.rm = TRUE); max(salaries_max$largest_compensation,na.rm = TRUE)
 
 #dummy variable for "receieved bonus"
 salaries_max <- mutate(salaries_max, receive_bonus  = Bonus > 0)
-salaries_max$receive_bonus[is.na(salaries_max$largest_compensation)] <- NA
+salaries_max$receive_bonus[is.na(salaries_max$Total.Compensation)] <- NA
 #table(salaries_max$receive_bonus)
 
+salaries_max<-select(salaries_max,largest_compensation=Total.Compensation,code=PHA.Code,receive_bonus)
 
 # add max salary data to HCV data frame
 hcv <- left_join(hcv, salaries_max, by = "code")
+
+#------------------------------------------------------------
+#                           Analysis 
+#------------------------------------------------------------
+
 #plot(hcv$hh_income, hcv$largest_compensation)
 #liz: possible graphic?
 
