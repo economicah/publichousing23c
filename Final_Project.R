@@ -1,11 +1,11 @@
 # you can delete this after reading it, but HELLO
 # I'm very hot right now. Don't like this heat.
-<<<<<<< HEAD
-#this is my test change
-=======
-# how was your ice cream last night?
 
->>>>>>> 7a3b0a3d9757821cc8427719eb695fdc787cba40
+#this is my test change
+
+# how was your ice cream last night?
+#it was so good. how was your lyft?
+
 rm(list = ls()) #wipes out your environment
 setwd("~/Documents/Harvard Extension School/Math E-23C/Data/")
 
@@ -30,12 +30,19 @@ pha[pha == -5] <- NA
 
 # filtering to keep only "Housing Choice Voucher" programs (program = 3)
 hcv <- filter(pha, pha$program == 3)
+
 # add total_rent as a new variable
 hcv <- mutate(hcv, total_rent  = rent_per_month + spending_per_month)
+#mean(hcv$total_rent, na.rm = TRUE);min(hcv$total_rent, na.rm = TRUE);max(hcv$total_rent, na.rm = TRUE)
+
 # add monthly income as a new variable
 hcv <- mutate(hcv, income_monthly  = hh_income/12)
+#mean(hcv$income_monthly, na.rm = TRUE);min(hcv$income_monthly, na.rm = TRUE);max(hcv$income_monthly, na.rm = TRUE)
+
 # add rent_burden as a new variable (total rent/monthly income)
 hcv <- mutate(hcv, rent_burden  = total_rent/income_monthly)
+#mean(hcv$rent_burden, na.rm = TRUE);min(hcv$rent_burden, na.rm = TRUE);max(hcv$rent_burden, na.rm = TRUE)
+
 hist(hcv$rent_burden, breaks = "FD", xlim = c(0,2))
 max(hcv$rent_burden, na.rm = TRUE) 
 
