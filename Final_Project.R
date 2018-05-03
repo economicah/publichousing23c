@@ -78,13 +78,19 @@ salaries_max<-select(salaries_max,largest_compensation=Total.Compensation,code=P
 
 # add max salary data to HCV data frame
 hcv <- left_join(hcv, salaries_max, by = "code")
+#plot(hcv$hh_income, hcv$largest_compensation)
+#liz: possible graphic?
+
 
 #------------------------------------------------------------
 #                           Analysis 
 #------------------------------------------------------------
 
-#plot(hcv$hh_income, hcv$largest_compensation)
-#liz: possible graphic?
+# ugly bar chart -- i want to generate a variable for N female-headed HH
+# as total_units * pct_female_headed and make a stacked bar chart (blue and pink! or something)
+ggplot(hcv,aes(x=hcv$region,y=hcv$pha_total_units))+geom_bar(stat="identity")
+
+
 
 # salaries by tenant income
 ggplot(hcv) + geom_point(aes(x=hh_income, y=largest_compensation)) + 
