@@ -1,6 +1,11 @@
 # you can delete this after reading it, but HELLO
 # I'm very hot right now. Don't like this heat.
+<<<<<<< HEAD
 #this is my test change
+=======
+# how was your ice cream last night?
+
+>>>>>>> 7a3b0a3d9757821cc8427719eb695fdc787cba40
 rm(list = ls()) #wipes out your environment
 setwd("~/Documents/Harvard Extension School/Math E-23C/Data/")
 
