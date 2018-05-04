@@ -118,12 +118,18 @@ hcv <- left_join(hcv, salaries_max, by = "code")
 
 hcv_collapse <- summaryBy(num_fem+num_male~region,data=hcv,FUN=sum,na.rm=TRUE)
 hcv_collapse_melt <-melt(hcv_collapse,id.var="region")
-hcv_collapse_melt$variable <- factor(hcv_collapse_melt$variable, levels = c("num_fem.sum"
-                                                                            ,"num_male.sum"))
-ggplot(data = hcv_collapse_melt, 
-       aes(x = hcv_collapse_melt$region, y = hcv_collapse_melt$value,
-           fill = factor(variable))) +
-  geom_bar(stat="identity")
+
+#liz: trying to get males on top but not working.
+#hcv_collapse_melt$variable <- factor(hcv_collapse_melt$variable, levels = c("num_fem.sum"
+                                                                         #   ,"num_male.sum"))
+ggplot(data = hcv_collapse_melt,
+       aes(x = region, y = value, fill = factor(variable))) +
+  geom_bar(stat="identity") + theme_bw() + labs(x="Region")  +
+  ggtitle("Households Receiving Subsidized Housing by Census Region") +
+  scale_y_continuous(name="Count",labels=scales::comma) +
+  theme(legend.position="bottom",legend.direction = "horizontal",
+        legend.title=element_blank()) +
+  scale_fill_manual(values=c("lightpink","steelblue1"),labels=c("Female-Headed","Male-Headed"))
 
 
 
