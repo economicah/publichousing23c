@@ -66,6 +66,7 @@ states_fin <- states[, c(1, 3, 4)]
 hcv <- left_join(hcv, states_fin, by = "state")
 hcv$region <-as.character(hcv$region)
 hcv$region[is.na(hcv$region)] <- "Island"
+hcv$region<-as.factor(hcv$region)
 table(hcv$region)
 
 # island areas (eg Puerto Rico, Virgin Island, etc) don't have a census region, so default to
