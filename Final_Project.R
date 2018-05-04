@@ -81,17 +81,31 @@ salaries[,4:10] <- sapply(salaries[,4:10], strip_dol)
 # generate dataset of max salary for each PHA
 salaries_max <- salaries %>% group_by(PHA.Code) %>% top_n(1, Total.Compensation) %>% 
   distinct(salaries, PHA.Code, Total.Compensation, .keep_all = TRUE)
+salaries_max$Total.Compensation[salaries_max$Total.Compensation == 0] <- NA # recode missing compensation data as NA rather than 0
+#mean(salaries_max$Total.Compensation,na.rm = TRUE); min(salaries_max$Total.Compensation,na.rm = TRUE); max(salaries_max$Total.Compensation,na.rm = TRUE)
 
-salaries_max<-select(salaries_max,Total.Compensation,code=PHA.Code,Bonus)
+#dummy variable for "receieved bonus"
+salaries_max <- mutate(salaries_max, receive_bonus  = Bonus > 0)
+salaries_max$receive_bonus[is.na(salaries_max$Total.Compensation)] <- NA
+
+salaries_max<-select(salaries_max,Total.Compensation,code=PHA.Code,receive_bonus)
 
 # add max salary data to HCV data frame
 hcv <- left_join(hcv, salaries_max, by = "code")
-#plot(hcv$hh_income, hcv$largest_compensation)
+#plot(hcv$hh_income, hcv$Total.Compensation)
 #liz: possible graphic?
 
 #------------------------------------------------------------
 #          Create Variables               
 #------------------------------------------------------------
+
+
+# add number of client households as a new variable
+hcv <- mutate(hcv, num_hh = total_units * (pct_occupied/100))
+
+# the census bureau designates census tracts with a poverty rate >=20% as "poverty areas"
+hcv <- mutate(hcv,poverty_area=tpoverty >=20)
+#head(hcv$poverty_area,hcv$tpoverty)
 
 # add number of client households as a new variable
 hcv <- mutate(hcv, num_hh = total_units * (pct_occupied/100))
@@ -115,16 +129,9 @@ hcv <- mutate(hcv, income_monthly  = hh_income/12)
 hcv <- mutate(hcv, rent_burden  = total_rent/income_monthly)
 #mean(hcv$rent_burden, na.rm = TRUE);min(hcv$rent_burden, na.rm = TRUE);max(hcv$rent_burden, na.rm = TRUE)
 
-# recode missing compensation data as NA rather than 0 and rename
-hcv$Total.Compensation[hcv$Total.Compensation == 0] <- NA
-#salaries_max <- rename(salaries_max, c("Total.Compensation"="largest_compensation"))
-#mean(salaries_max$largest_compensation,na.rm = TRUE); min(salaries_max$largest_compensation,na.rm = TRUE); max(salaries_max$largest_compensation,na.rm = TRUE)
-
-#dummy variable for "receieved bonus"
-hcv <- mutate(hcv, receive_bonus  = Bonus > 0)
-hcv$receive_bonus[is.na(hcv$Total.Compensation)] <- NA
 #table(hcv$receive_bonus,hcv$region)
 #liz they're much more likely to get bonuses in the south looks like
+
 
 #-------------------------------------------------------------
 # *************************GRAPHICS***************************
@@ -142,7 +149,7 @@ hcv_collapse_melt <-melt(hcv_collapse,id.var="region")
 ggplot(data = hcv_collapse_melt,
        aes(x = region, y = value, fill = factor(variable))) +
   geom_bar(stat="identity") + theme_bw() + labs(x="Region")  +
-  ggtitle("Households Receiving Subsidized Housing by Census Region") +
+  ggtitle("Households Receiving Subsidized Housing by Region") +
   scale_y_continuous(name="Count",labels=scales::comma) +
   theme(legend.position="bottom",legend.direction = "horizontal",
         legend.title=element_blank()) +
@@ -160,21 +167,21 @@ hist(hcv$months_waiting, breaks = "FD",
      xlab="Months",ylab="HCV Programs")
 
 #liz:-- do we want to look at these?
-hist(hcv$largest_compensation, breaks = "FD", freq = FALSE)
+hist(hcv$Total.Compensation, breaks = "FD", freq = FALSE)
 hist(hcv$rent_burden, breaks = "FD", xlim = c(0,2)) 
 
 
 # salaries by tenant income
-ggplot(hcv) + geom_point(aes(x=hh_income, y=largest_compensation)) + 
+ggplot(hcv) + geom_point(aes(x=hh_income, y=Total.Compensation)) + 
   scale_x_continuous(name="Income of Tenants") +
   scale_y_continuous(name="Salary of Highest PHA Employee")
 # try to remove some of the higher salaries, to see if there is a trend?
-ggplot(hcv) + geom_point(aes(x=hh_income, y=largest_compensation)) + 
+ggplot(hcv) + geom_point(aes(x=hh_income, y=Total.Compensation)) + 
   scale_x_continuous(name="Income of Tenants", limits=c(0, 30000)) +
   scale_y_continuous(name="Salary of Highest PHA Employee", limits=c(0, 200000))
 # looks more linear, as we expected
 # segmented out by census region
-ggplot(hcv) + geom_point(aes(x=hh_income, y=largest_compensation)) + facet_wrap(~ region) +
+ggplot(hcv) + geom_point(aes(x=hh_income, y=Total.Compensation)) + facet_wrap(~ region) +
   scale_x_continuous(name="Income of Tenants", limits=c(0, 30000)) +
   scale_y_continuous(name="Salary of Highest PHA Employee", limits=c(0, 200000))
 # I THINK the NA are from the US territories that aren't captured in Census regions - do we want 
@@ -191,7 +198,7 @@ hcv[idx, c(71, 77, 78)]
 
 
 # plotted just to see what it looks like
-ggplot(hcv) + geom_point(aes(x=rent_burden, y=largest_compensation))
+ggplot(hcv) + geom_point(aes(x=rent_burden, y=Total.Compensation))
 
 #-------------------------------------------------------------
 # *************************Analysis***************************
@@ -200,4 +207,22 @@ ggplot(hcv) + geom_point(aes(x=rent_burden, y=largest_compensation))
 #------------------------------------------------------------
 #      Permutation Test (Reqd Analysis #1)
 #------------------------------------------------------------
+
+PoorInd <- which(hcv$poverty_area); head(PoorInd) #indices for tier 2 maps
+
+#Total.Compensation
+tapply(hcv$Total.Compensation,hcv$poverty_area, mean,na.rm=TRUE)
+Total.Compensation <- hcv$Total.Compensation
+Obs <- mean(Total.Compensation[PoorInd],na.rm=TRUE)-mean(Total.Compensation[-PoorInd],na.rm=TRUE); Obs  #difference of $6,064--is this significant?
+#Run a permutation test by scrambling the tier 2 vector
+N <-10000; diff <- numeric(N)
+for (i in 1:N) {
+  scramble <- sample(hcv$poverty_area,length(hcv$poverty_area))
+  PoorInd <- which(scramble)
+  diff[i] <- mean(Total.Compensation[PoorInd],na.rm=TRUE)-mean(Total.Compensation[-PoorInd],na.rm=TRUE)
+}
+head(diff)
+hist(diff)
+abline(v=Obs, col = "red") #far from the center of the distribution
+pvalue <- mean(diff > Obs); pvalue #pval of 0. Significant
 
