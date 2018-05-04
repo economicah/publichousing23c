@@ -56,6 +56,24 @@ data(states)
 states_fin <- states[, c(1, 3, 4)]
 # add census regions to HCV data frame
 hcv <- left_join(hcv, states_fin, by = "state")
+# island areas (eg Puerto Rico, Virgin Island, etc) don't have a census region, so default to
+# N/A; change region to "islands"
+# Micah - I'm having trouble converting "NA" to islands; keep getting error messages because the 
+# NA is messing things up for some reason. I will look at it with fresh eyes tomorrow and/or
+# maybe ask a coworker
+# this is what I've tried so far:
+idx <- which(is.na(hcv$region) == TRUE)
+hcv[idx, hcv$region] <- "islands"
+hcv$region <- gsub("NA", "islands", hcv$region)
+replace(hcv$region, is.na(hcv$region), "islands") 
+levels(hcv$region)
+hcv$region[is.na(hcv$region)] <- "islands"
+hcv$region <- as.character(hcv$region)
+replace(hcv$region, is.na(hcv$region), "islands") 
+levels(hcv$region)
+unique(hcv$region)
+# end of effort; comment out this bunch if you plan on running from top to bottom, otherwise
+# it will screw up the levels in the region column
 
 # load PHA executive salary data
 salaries <- read.csv("2014EXEC_COMP.csv"); head(salaries)
