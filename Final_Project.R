@@ -118,10 +118,13 @@ hcv <- left_join(hcv, salaries_max, by = "code")
 #liz: possible graphic?
 
 
-#------------------------------------------------------------
-#                           Analysis 
-#------------------------------------------------------------
+#-------------------------------------------------------------
+# *************************Analysis***************************
+#-------------------------------------------------------------
 
+#------------------------------------------------------------
+#      BARPLOT (Reqd Graphical Displays #1)
+#------------------------------------------------------------
 hcv_collapse <- summaryBy(num_fem+num_male~region,data=hcv,FUN=sum,na.rm=TRUE)
 hcv_collapse_melt <-melt(hcv_collapse,id.var="region")
 
@@ -138,6 +141,15 @@ ggplot(data = hcv_collapse_melt,
   scale_fill_manual(values=c("lightpink","steelblue1"),labels=c("Female-Headed","Male-Headed"))
 
 
+#------------------------------------------------------------
+#      HISTOGRAM (Reqd Graphical Displays #2)
+#------------------------------------------------------------
+
+hist(hcv$months_waiting, breaks = "FD",
+     ylim=c(0,300), xlim=c(0,150),
+     col=rgb(0.2,0.8,0.5,0.5),border=F,
+     main="Time Spent Waiting for a Home",
+     xlab="Months",ylab="HCV Programs")
 
 # salaries by tenant income
 ggplot(hcv) + geom_point(aes(x=hh_income, y=largest_compensation)) + 
