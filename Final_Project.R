@@ -32,9 +32,11 @@ pha[pha == -5] <- NA
 hcv <- filter(pha, pha$program == 3)
 
 # add number of client households as a new variable
-hcv <- mutate(hcv, num_hh = total_units * (pct_occupied/100))
-#mean(hcv$total_rent, na.rm = TRUE);min(hcv$total_rent, na.rm = TRUE);max(hcv$total_rent, na.rm = TRUE)
+hcv <- mutate(hcv, num_hh = round(total_units * (pct_occupied/100),0))
+#sum(hcv$num_hh, na.rm = TRUE)
 
+# add number of female-headed households as a new variable
+hcv <- mutate(hcv, num_fem = round(total_units * (pct_occupied/100) * (pct_female_head/100),0))
 
 # add total_rent as a new variable
 hcv <- mutate(hcv, total_rent  = rent_per_month + spending_per_month)
@@ -93,8 +95,9 @@ hcv <- left_join(hcv, salaries_max, by = "code")
 
 # ugly bar chart -- i want to generate a variable for N female-headed HH
 # as total_units * pct_female_headed and make a stacked bar chart (blue and pink! or something)
-ggplot(hcv,aes(x=hcv$region,y=hcv$pha_total_units))+geom_bar(stat="identity")
+ggplot(hcv,aes(x=hcv$region,y=hcv$num_hh,fill=hcv$num_fem))+geom_bar(stat="identity")
 
+test<-summaryBy(num_hh~region,data=hcv,FUN=max)
 
 
 # salaries by tenant income
