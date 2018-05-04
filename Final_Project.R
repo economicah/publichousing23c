@@ -5,6 +5,8 @@
 rm(list = ls()) #wipes out your environment
 setwd("~/Documents/Harvard Extension School/Math E-23C/Data/")
 
+#install.packages("reshape2")
+library(reshape2)
 #install.packages("doBy")
 library(doBy)
 #install.packages("ggplot2")
@@ -32,11 +34,14 @@ pha[pha == -5] <- NA
 hcv <- filter(pha, pha$program == 3)
 
 # add number of client households as a new variable
-hcv <- mutate(hcv, num_hh = round(total_units * (pct_occupied/100),0))
+hcv <- mutate(hcv, num_hh = total_units * (pct_occupied/100))
 #sum(hcv$num_hh, na.rm = TRUE)
 
 # add number of female-headed households as a new variable
-hcv <- mutate(hcv, num_fem = round(total_units * (pct_occupied/100) * (pct_female_head/100),0))
+hcv <- mutate(hcv, num_fem = total_units * (pct_occupied/100) * (pct_female_head/100))
+
+# add number of male-headed households as a new variable
+hcv <- mutate(hcv, num_male = total_units * (pct_occupied/100) * (1-(pct_female_head/100)))
 
 # add total_rent as a new variable
 hcv <- mutate(hcv, total_rent  = rent_per_month + spending_per_month)
@@ -111,11 +116,15 @@ hcv <- left_join(hcv, salaries_max, by = "code")
 #                           Analysis 
 #------------------------------------------------------------
 
-# ugly bar chart -- i want to generate a variable for N female-headed HH
-# as total_units * pct_female_headed and make a stacked bar chart (blue and pink! or something)
-ggplot(hcv,aes(x=hcv$region,y=hcv$num_hh,fill=hcv$num_fem))+geom_bar(stat="identity")
+hcv_collapse <- summaryBy(num_fem+num_male~region,data=hcv,FUN=sum,na.rm=TRUE)
+hcv_collapse_melt <-melt(hcv_collapse,id.var="region")
+hcv_collapse_melt$variable <- factor(hcv_collapse_melt$variable, levels = c("num_fem.sum"
+                                                                            ,"num_male.sum"))
+ggplot(data = hcv_collapse_melt, 
+       aes(x = hcv_collapse_melt$region, y = hcv_collapse_melt$value,
+           fill = factor(variable))) +
+  geom_bar(stat="identity")
 
-test<-summaryBy(num_hh~region,data=hcv,FUN=max)
 
 
 # salaries by tenant income
