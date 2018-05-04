@@ -61,24 +61,29 @@ hcv <- mutate(hcv, rent_burden  = total_rent/income_monthly)
 data(states)
 # keep only "State", "Region", and "Division" columns
 states_fin <- states[, c(1, 3, 4)]
+
 # add census regions to HCV data frame
 hcv <- left_join(hcv, states_fin, by = "state")
+hcv$region <-as.character(hcv$region)
+hcv$region[is.na(hcv$region)] <- "Island"
+table(hcv$region)
+
 # island areas (eg Puerto Rico, Virgin Island, etc) don't have a census region, so default to
 # N/A; change region to "islands"
 # Micah - I'm having trouble converting "NA" to islands; keep getting error messages because the 
 # NA is messing things up for some reason. I will look at it with fresh eyes tomorrow and/or
 # maybe ask a coworker
 # this is what I've tried so far:
-idx <- which(is.na(hcv$region) == TRUE)
-hcv[idx, hcv$region] <- "islands"
-hcv$region <- gsub("NA", "islands", hcv$region)
-replace(hcv$region, is.na(hcv$region), "islands") 
-levels(hcv$region)
-hcv$region[is.na(hcv$region)] <- "islands"
-hcv$region <- as.character(hcv$region)
-replace(hcv$region, is.na(hcv$region), "islands") 
-levels(hcv$region)
-unique(hcv$region)
+#idx <- which(is.na(hcv$region) == TRUE)
+#hcv[idx, hcv$region] <- "islands"
+#hcv$region <- gsub("NA", "islands", hcv$region)
+#replace(hcv$region, is.na(hcv$region), "islands") 
+#levels(hcv$region)
+#hcv$region[is.na(hcv$region)] <- "islands"
+#hcv$region <- as.character(hcv$region)
+#replace(hcv$region, is.na(hcv$region), "islands") 
+#levels(hcv$region)
+#unique(hcv$region)
 # end of effort; comment out this bunch if you plan on running from top to bottom, otherwise
 # it will screw up the levels in the region column
 
