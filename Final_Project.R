@@ -20,8 +20,13 @@ library(maps)
 #install.packages("noncensus")
 library(noncensus)
 
+
+#-------------------------------------------------------------
+# *******************CLEAN & BUILD DATASET********************
+#-------------------------------------------------------------
+
 #------------------------------------------------------------
-#                           Clean & Build Dataset
+#          Read in Data                 
 #------------------------------------------------------------
 
 #public housing authority data from 2014
@@ -33,29 +38,6 @@ pha[pha == -5] <- NA
 # extract subset of only "Housing Choice Voucher" programs (program = 3)
 hcv <- filter(pha, pha$program == 3)
 
-# add number of client households as a new variable
-hcv <- mutate(hcv, num_hh = total_units * (pct_occupied/100))
-#sum(hcv$num_hh, na.rm = TRUE)
-
-# add number of female-headed households as a new variable
-hcv <- mutate(hcv, num_fem = total_units * (pct_occupied/100) * (pct_female_head/100))
-
-# add number of male-headed households as a new variable
-hcv <- mutate(hcv, num_male = total_units * (pct_occupied/100) * (1-(pct_female_head/100)))
-
-# add total_rent as a new variable
-hcv <- mutate(hcv, total_rent  = rent_per_month + spending_per_month)
-#mean(hcv$total_rent, na.rm = TRUE);min(hcv$total_rent, na.rm = TRUE);max(hcv$total_rent, na.rm = TRUE)
-
-# add monthly income as a new variable
-hcv <- mutate(hcv, income_monthly  = hh_income/12)
-#mean(hcv$income_monthly, na.rm = TRUE);min(hcv$income_monthly, na.rm = TRUE);max(hcv$income_monthly, na.rm = TRUE)
-
-# add rent_burden as a new variable (total rent/monthly income)
-hcv <- mutate(hcv, rent_burden  = total_rent/income_monthly)
-#mean(hcv$rent_burden, na.rm = TRUE);min(hcv$rent_burden, na.rm = TRUE);max(hcv$rent_burden, na.rm = TRUE)
-#hist(hcv$rent_burden, breaks = "FD", xlim = c(0,2)) 
-#liz: possible graphic?
 
 # dataset of states by census regions
 data(states)
@@ -100,26 +82,52 @@ salaries[,4:10] <- sapply(salaries[,4:10], strip_dol)
 salaries_max <- salaries %>% group_by(PHA.Code) %>% top_n(1, Total.Compensation) %>% 
   distinct(salaries, PHA.Code, Total.Compensation, .keep_all = TRUE)
 
-# recode missing compensation data as NA rather than 0 and rename
-salaries_max$Total.Compensation[salaries_max$Total.Compensation == 0] <- NA
-#salaries_max <- rename(salaries_max, c("Total.Compensation"="largest_compensation"))
-#mean(salaries_max$largest_compensation,na.rm = TRUE); min(salaries_max$largest_compensation,na.rm = TRUE); max(salaries_max$largest_compensation,na.rm = TRUE)
-
-#dummy variable for "receieved bonus"
-salaries_max <- mutate(salaries_max, receive_bonus  = Bonus > 0)
-salaries_max$receive_bonus[is.na(salaries_max$Total.Compensation)] <- NA
-#table(salaries_max$receive_bonus)
-
-salaries_max<-select(salaries_max,largest_compensation=Total.Compensation,code=PHA.Code,receive_bonus)
+salaries_max<-select(salaries_max,Total.Compensation,code=PHA.Code,Bonus)
 
 # add max salary data to HCV data frame
 hcv <- left_join(hcv, salaries_max, by = "code")
 #plot(hcv$hh_income, hcv$largest_compensation)
 #liz: possible graphic?
 
+#------------------------------------------------------------
+#          Create Variables               
+#------------------------------------------------------------
+
+# add number of client households as a new variable
+hcv <- mutate(hcv, num_hh = total_units * (pct_occupied/100))
+#sum(hcv$num_hh, na.rm = TRUE)
+
+# add number of female-headed households as a new variable
+hcv <- mutate(hcv, num_fem = total_units * (pct_occupied/100) * (pct_female_head/100))
+
+# add number of male-headed households as a new variable
+hcv <- mutate(hcv, num_male = total_units * (pct_occupied/100) * (1-(pct_female_head/100)))
+
+# add total_rent as a new variable
+hcv <- mutate(hcv, total_rent  = rent_per_month + spending_per_month)
+#mean(hcv$total_rent, na.rm = TRUE);min(hcv$total_rent, na.rm = TRUE);max(hcv$total_rent, na.rm = TRUE)
+
+# add monthly income as a new variable
+hcv <- mutate(hcv, income_monthly  = hh_income/12)
+#mean(hcv$income_monthly, na.rm = TRUE);min(hcv$income_monthly, na.rm = TRUE);max(hcv$income_monthly, na.rm = TRUE)
+
+# add rent_burden as a new variable (total rent/monthly income)
+hcv <- mutate(hcv, rent_burden  = total_rent/income_monthly)
+#mean(hcv$rent_burden, na.rm = TRUE);min(hcv$rent_burden, na.rm = TRUE);max(hcv$rent_burden, na.rm = TRUE)
+
+# recode missing compensation data as NA rather than 0 and rename
+hcv$Total.Compensation[hcv$Total.Compensation == 0] <- NA
+#salaries_max <- rename(salaries_max, c("Total.Compensation"="largest_compensation"))
+#mean(salaries_max$largest_compensation,na.rm = TRUE); min(salaries_max$largest_compensation,na.rm = TRUE); max(salaries_max$largest_compensation,na.rm = TRUE)
+
+#dummy variable for "receieved bonus"
+hcv <- mutate(hcv, receive_bonus  = Bonus > 0)
+hcv$receive_bonus[is.na(hcv$Total.Compensation)] <- NA
+#table(hcv$receive_bonus,hcv$region)
+#liz they're much more likely to get bonuses in the south looks like
 
 #-------------------------------------------------------------
-# *************************Analysis***************************
+# *************************GRAPHICS***************************
 #-------------------------------------------------------------
 
 #------------------------------------------------------------
@@ -144,12 +152,17 @@ ggplot(data = hcv_collapse_melt,
 #------------------------------------------------------------
 #      HISTOGRAM (Reqd Graphical Displays #2)
 #------------------------------------------------------------
-
+#liz: is this done?
 hist(hcv$months_waiting, breaks = "FD",
      ylim=c(0,300), xlim=c(0,150),
      col=rgb(0.2,0.8,0.5,0.5),border=F,
      main="Time Spent Waiting for a Home",
      xlab="Months",ylab="HCV Programs")
+
+#liz:-- do we want to look at these?
+hist(hcv$largest_compensation, breaks = "FD", freq = FALSE)
+hist(hcv$rent_burden, breaks = "FD", xlim = c(0,2)) 
+
 
 # salaries by tenant income
 ggplot(hcv) + geom_point(aes(x=hh_income, y=largest_compensation)) + 
@@ -169,6 +182,7 @@ ggplot(hcv) + geom_point(aes(x=hh_income, y=largest_compensation)) + facet_wrap(
 # more rent burdened than those in other regions (did a boxplot elsewhere)
 # there are only 81 observations of the territorities, so that would be a caveat of exploring that
 # further, but could be interesting!
+
 idx <- which(is.na(hcv$region) == TRUE)
 hcv[idx, c(71, 77, 78)]
 
@@ -179,5 +193,11 @@ hcv[idx, c(71, 77, 78)]
 # plotted just to see what it looks like
 ggplot(hcv) + geom_point(aes(x=rent_burden, y=largest_compensation))
 
+#-------------------------------------------------------------
+# *************************Analysis***************************
+#-------------------------------------------------------------
 
-hist(hcv$largest_compensation, breaks = "FD", freq = FALSE)
+#------------------------------------------------------------
+#      Permutation Test (Reqd Analysis #1)
+#------------------------------------------------------------
+
