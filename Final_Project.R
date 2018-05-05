@@ -164,26 +164,23 @@ ggplot(data = hcv_collapse_melt, aes(x = reorder(region, -value), y = value,
 #      HISTOGRAM (Reqd Graphical Displays #2)
 #------------------------------------------------------------
 #liz: is this done?
-hist(hcv$months_waiting, breaks = "FD",
+hist(hcv$months_waiting, breaks = "FD", freq = FALSE,
      ylim=c(0,300), xlim=c(0,150),
      col=rgb(0.2,0.8,0.5,0.5),border=F,
      main="Time Spent Waiting for a Home",
      xlab="Months",ylab="Number of HCV Programs")
 
 #liz:-- do we want to look at these?
-#I've made them look nicer, if we do! 
 hist(hcv$Total.Compensation, breaks = "FD", freq = FALSE,
      col=rgb(0.1,0.5,0.8,0.5), main = "Total Compensation of PHA Executives",
      xlab = "Total Compensation", ylab = "Number of Executives")
-hist(hcv$rent_burden, breaks = "FD", xlim = c(0.5, 1.3), prob = TRUE,
+hist(hcv$rent_burden, breaks = "FD", prob = TRUE,
      col=rgb(0.8,0.3,0.6,0.5), main = "Rent Burden of PHA Clients",
      xlab = "Rent Burden", ylab = "Number of Clients") 
-a <- mean(hcv$Total.Compensation, na.rm = TRUE) 
-b <- sd(hcv$Total.Compensation, na.rm = TRUE)
-
+a <- 1/mean(hcv$months_waiting, na.rm = TRUE)
 mu <- mean(hcv$rent_burden, na.rm = TRUE)
-sd_rb <- sd(hcv$rent_burden, na.rm = TRUE)
-curve(dnorm(x, mean = a, sd = b), add= TRUE)
+sig <- sd(hcv$rent_burden, na.rm = TRUE)
+curve(dexp(x, a, add = TRUE)
 #-------------------------------------------------------------
 # *************************Analysis***************************
 #-------------------------------------------------------------
