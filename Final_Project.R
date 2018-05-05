@@ -3,7 +3,7 @@
 #------------------------------------------------------------
 #!diagnostics off
 rm(list = ls()) #wipes out your environment
-setwd("~/Documents/Harvard Extension School/Math E-23C/Data/")
+#setwd("~/Documents/Harvard Extension School/Math E-23C/Data/")
 
 #install.packages("reshape2")
 library(reshape2)
@@ -163,24 +163,70 @@ ggplot(data = hcv_collapse_melt, aes(x = reorder(region, -value), y = value,
 #------------------------------------------------------------
 #      HISTOGRAM (Reqd Graphical Displays #2)
 #------------------------------------------------------------
-#liz: is this done?
-hist(hcv$months_waiting, breaks = "FD", freq = FALSE,
-     ylim=c(0,300), xlim=c(0,150),
+
+hist(hcv$Total.Compensation, breaks = "FD", freq = FALSE,
+     col=rgb(0.1,0.5,0.8,0.5), main = "Total Compensation of PHA Executives",
+     xlab = "Total Compensation", ylab = "Number of Executives")
+
+hist(hcv$rent_burden, breaks = "FD", prob = TRUE,
+     col=rgb(0.8,0.3,0.6,0.5), xlim = c(0, 2.5),
+     main = "Rent Burden of PHA Clients",
+     xlab = "Rent Burden", ylab = "Number of Clients") 
+# we had decided we would plot rent_burden with a PDF on it, but the normal 
+# distribution doesn't seem to fit, which is why I decided to do an exp dist. above
+# commented out curve below for you to see:
+#mu <- mean(hcv$rent_burden, na.rm = TRUE)
+#sig <- sd(hcv$rent_burden, na.rm = TRUE)
+#curve(dnorm(x, mu, sig), add= TRUE)
+
+
+#------------------------------------------------------------
+#      PDF over HISTOGRAM (Reqd Graphical Displays #3)
+#------------------------------------------------------------
+# hist(hcv$months_waiting, breaks = "FD", 
+     #ylim=c(0,300), xlim=c(0,150),
+     #col=rgb(0.2,0.8,0.5,0.5),border=F,
+     #main="Time Spent Waiting for a Home",
+     #xlab="Months",ylab="Number of HCV Programs")
+
+hist(hcv$months_waiting, breaks = "FD", prob = TRUE,
+     ylim = c(0,.04),
      col=rgb(0.2,0.8,0.5,0.5),border=F,
      main="Time Spent Waiting for a Home",
      xlab="Months",ylab="Number of HCV Programs")
 
-#liz:-- do we want to look at these?
-hist(hcv$Total.Compensation, breaks = "FD", freq = FALSE,
-     col=rgb(0.1,0.5,0.8,0.5), main = "Total Compensation of PHA Executives",
-     xlab = "Total Compensation", ylab = "Number of Executives")
-hist(hcv$rent_burden, breaks = "FD", prob = TRUE,
-     col=rgb(0.8,0.3,0.6,0.5), main = "Rent Burden of PHA Clients",
-     xlab = "Rent Burden", ylab = "Number of Clients") 
+# add exponential distribution function
 a <- 1/mean(hcv$months_waiting, na.rm = TRUE)
-mu <- mean(hcv$rent_burden, na.rm = TRUE)
-sig <- sd(hcv$rent_burden, na.rm = TRUE)
-curve(dexp(x, a, add = TRUE)
+curve(dexp(x, a), add = TRUE)
+
+
+#------------------------------------------------------------
+#      Contingency table (Reqd Graphical Displays #4)
+#------------------------------------------------------------
+median(hcv$months_waiting, na.rm= TRUE)
+max(hcv$months_waiting, na.rm = TRUE)
+min(hcv$months_waiting, na.rm = TRUE)
+mean(hcv$months_waiting, na.rm = TRUE)
+
+# have r pick bins 
+# Micah - feel free to pick different bins for this! I had it do this based off of
+# quantiles, but we can change to what might make more sense
+hcv <- mutate(hcv, months_waiting_bin = 
+         cut(hcv$months_waiting, breaks = 
+               quantile(hcv$months_waiting, probs = seq(0, 1, 0.2), na.rm = TRUE)))
+table(hcv$months_waiting_bin)
+table(hcv$months_waiting_bin, hcv$poverty_area)
+
+attach(hcv)
+hcv$mw_bin_2[hcv$months_waiting < 6] <- "0 to < 6 mo."
+mydata$agecat[age > 45 & age <= 75] <- "Middle Aged"
+mydata$agecat[age <= 45] <- "Young"
+detach(mydata)
+
+hcv <- mutate(hcv, months_waiting_bin_2 = 
+                cut(hcv$months_waiting, breaks = 
+                      quantile(hcv$months_waiting, probs = seq(0, 1, 0.2), na.rm = TRUE)))
+
 #-------------------------------------------------------------
 # *************************Analysis***************************
 #-------------------------------------------------------------
