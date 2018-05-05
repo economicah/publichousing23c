@@ -185,13 +185,16 @@ ggplot(hcv, aes(x=hh_income, y=Total.Compensation), group=region) +
   geom_point(aes(shape=region, color=region)) + 
   scale_x_continuous(name="Income of Tenants") +
   scale_y_continuous(name="Salary of Highest PHA Employee") +
-  ggtitle("Max PHA employee salary by income of PHA tenants") +
+  ggtitle("Max PHA employee salary per tenant income") +
   geom_smooth(method = 'lm')
-# looks more linear, as we expected
-# segmented out by census region
-ggplot(hcv) + geom_point(aes(x=hh_income, y=Total.Compensation)) + facet_wrap(~ region) +
-  scale_x_continuous(name="Income of Tenants", limits=c(0, 30000)) +
-  scale_y_continuous(name="Salary of Highest PHA Employee", limits=c(0, 200000))
+
+
+ggplot(hcv, aes(x=hh_income, y=Total.Compensation), group=region) + 
+  geom_point(aes(shape=region, color=region)) + 
+  scale_x_continuous(name="Income of Tenants") +
+  scale_y_continuous(name="Salary of Highest PHA Employee") +
+  ggtitle("Max PHA employee salary per tenant income by region") +
+  geom_smooth(method = 'lm') + facet_wrap(~region)
 
 
 # plotted just to see what it looks like
