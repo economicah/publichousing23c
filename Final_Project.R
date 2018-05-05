@@ -15,6 +15,8 @@ library(ggplot2)
 library(dplyr)
 #install.packages("noncensus")
 library(noncensus)
+#install.packages("ggmap")
+library(ggmap)
 
 
 #-------------------------------------------------------------
@@ -334,4 +336,34 @@ ggplot(hcv, aes(x=num_hh, y=Total.Compensation), group=region) +
 #LIZ: this is interesting. play with the x-axis limit. most are clumped <1,000 and it's relatively flat
 #but then there's a really strong, positive relationship once the number of clients 
 #gets above that, all the way till 40,000 or so. could this be a candidate for logistic regression?
+
+#------------------------------------------------------------
+#      Graphical display diff from class scripts (#19)
+#------------------------------------------------------------
+
+
+# D. Kahle and H. Wickham. ggmap: Spatial Visualization with ggplot2. The R
+# Journal, 5(1), 144-161. URL
+# http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf
+
+usa.map <- get_map(location = 'united states', zoom=4, maptype = "terrain",
+                   source = 'google')
+
+hcv_map <- select(hcv, longitude, latitude, rent_burden)
+cont_coords <- function(x) (as.numeric(as.character(x)))
+hcv_map[,1:2] <- sapply(hcv_map[,1:2], cont_coords)
+ggmap(usa.map) + geom_point(aes(x=longitude, y=latitude, colour=rent_burden), 
+                            data=hcv_map, size = 0.5, na.rm = TRUE)  + 
+  scale_color_gradient("Rent\nBurden", low="blue", high="red") + 
+  ggtitle("Rent Burden Across the United States") +
+  coord_map(projection="mercator",xlim=c(-124, -66), ylim=c(25, 50)) +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        rect = element_blank(),
+        axis.title.y=element_blank(),
+        axis.title.x=element_blank(),
+        plot.title = element_text(hjust = 0.5))
+
+attr(usa.map, "bb") #get correct limits of US map to add into plot
 
