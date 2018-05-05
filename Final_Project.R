@@ -38,14 +38,14 @@ pha[pha == -5] <- NA
 # extract subset of only "Housing Choice Voucher" programs (program = 3)
 hcv <- filter(pha, pha$program == 3)
 
-
-# dataset of states by census regions
+# call dataset of states by census regions
 data(states)
 # keep only "State", "Region", and "Division" columns
 states_fin <- states[, c(1, 3, 4)]
 
 # add census regions to HCV data frame
 hcv <- left_join(hcv, states_fin, by = "state")
+# change region for US territories that were assigned "NA" to "Island"
 hcv$region <- as.character(hcv$region)
 hcv$region[is.na(hcv$region)] <- "Island"
 hcv$region <- as.factor(hcv$region)
@@ -75,9 +75,6 @@ salaries_max <- select(salaries_max, Total.Compensation, code = PHA.Code, receiv
 
 # add max salary data to HCV data frame
 hcv <- left_join(hcv, salaries_max, by = "code")
-#plot(hcv$hh_income, hcv$Total.Compensation)
-#liz: possible graphic?
-# from Liz: there's a ggplot of this down below, that I need to add colors to still
 
 #------------------------------------------------------------
 #          Create Variables               
@@ -88,10 +85,10 @@ hcv <- left_join(hcv, salaries_max, by = "code")
 hcv <- mutate(hcv, num_hh = total_units * (pct_occupied/100))
 
 # the census bureau designates census tracts with a poverty rate >=20% as "poverty areas"
-hcv <- mutate(hcv,poverty_area=tpoverty >=20)
+hcv <- mutate(hcv, poverty_area = tpoverty >=20)
 #head(hcv$poverty_area,hcv$tpoverty)
 
-# micah: don't want to remove the below 3 lines, but the mutation is the same as two above 
+# micah: didn't want to remove the below 3 lines, but the mutation is the same as two above 
 # add number of client households as a new variable
 # hcv <- mutate(hcv, num_hh = total_units * (pct_occupied/100))
 #sum(hcv$num_hh, na.rm = TRUE)
@@ -116,7 +113,7 @@ hcv <- mutate(hcv, rent_burden  = total_rent/income_monthly)
 
 table(hcv$receive_bonus,hcv$region)
 #liz they're much more likely to get bonuses in the south looks like
-#micah: I did a permutation test below to see if significant!
+#micah: I did a permutation test below to see if significant! (and it is)
 
 south_bonus <- hcv %>% filter(region == "South") %>% pull(receive_bonus)
 sb_mean <- mean(south_bonus, na.rm = TRUE)
@@ -146,9 +143,6 @@ pvalue_bonus <- (sum(diffs >= obs_diff)+1)/(N+1); pvalue_bonus
 hcv_collapse <- summaryBy(num_male+num_fem~region,data=hcv,FUN=sum,na.rm=TRUE)
 hcv_collapse_melt <-melt(hcv_collapse,id.var="region")
 
-#liz: trying to get males on top but not working.
-#all set! I just switched their ordering in the hcv_collapse, and then switched ordering in the 
-# ggplot below; I also ordered from highest to lowest
 #hcv_collapse_melt$variable <- factor(hcv_collapse_melt$variable, levels = c("num_fem.sum"
                                                                          #   ,"num_male.sum"))
 
@@ -173,8 +167,8 @@ hist(hcv$rent_burden, breaks = "FD", prob = TRUE,
      main = "Rent Burden of PHA Clients",
      xlab = "Rent Burden", ylab = "Number of Clients") 
 # we had decided we would plot rent_burden with a PDF on it, but the normal 
-# distribution doesn't seem to fit, which is why I decided to do an exp dist. above
-# commented out curve below for you to see:
+# distribution doesn't seem to fit, which is why I decided to do an exp dist. below
+# commented out curve below, if you want to see:
 #mu <- mean(hcv$rent_burden, na.rm = TRUE)
 #sig <- sd(hcv$rent_burden, na.rm = TRUE)
 #curve(dnorm(x, mu, sig), add= TRUE)
@@ -202,6 +196,7 @@ curve(dexp(x, a), add = TRUE)
 
 #------------------------------------------------------------
 #      Contingency table (Reqd Graphical Displays #4)
+#      Analysis of a contingency table (Reqd Analysis #3)
 #------------------------------------------------------------
 median(hcv$months_waiting, na.rm= TRUE)
 max(hcv$months_waiting, na.rm = TRUE)
@@ -215,6 +210,8 @@ hcv <- mutate(hcv, months_waiting_bin =
                quantile(hcv$months_waiting, probs = seq(0, 1, 0.2), na.rm = TRUE)))
 # contingency table of months waiting crossed with poverty areas
 table(hcv$months_waiting_bin, hcv$poverty_area)
+
+# OR
 
 # create our own bins 
 attach(hcv)
@@ -234,9 +231,13 @@ hcv$mw_bin_2 <- factor(hcv$mw_bin_2, levels =
                            "18 to < 24 mo.", "24 to < 3 mo.", "30 to < 36 mo.",
                            "36+ mo."))
 # contingency table of months waiting crossed with poverty areas
-table(hcv$mw_bin_2, hcv$poverty_area)
-xtabs(~hcv$mw_bin_2+hcv$poverty_area, data=hcv)
-table(hcv$mw_bin_2, hcv$poverty_area)
+pov_mo_tbl <- table(hcv$mw_bin_2, hcv$poverty_area)
+# Compare with the table that would be expected if the factors were independent
+pov_mo_tbl
+Expected <- outer(rowSums(pov_mo_tbl), colSums(pov_mo_tbl))/sum(pov_mo_tbl); Expected
+# Check if the difference between expected and observed is significant
+chisq.test(hcv$mw_bin_2, hcv$poverty_area)
+# There is about a 1% chance that the observed contingency table arose by chance
 
 #-------------------------------------------------------------
 # *************************Analysis***************************
