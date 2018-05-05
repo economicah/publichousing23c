@@ -172,34 +172,18 @@ hist(hcv$months_waiting, breaks = "FD",
 
 #liz:-- do we want to look at these?
 #I've made them look nicer, if we do! 
-hist(hcv$Total.Compensation, breaks = "FD",
+hist(hcv$Total.Compensation, breaks = "FD", freq = FALSE,
      col=rgb(0.1,0.5,0.8,0.5), main = "Total Compensation of PHA Executives",
      xlab = "Total Compensation", ylab = "Number of Executives")
-hist(hcv$rent_burden, breaks = "FD", xlim = c(0.5,2),
+hist(hcv$rent_burden, breaks = "FD", xlim = c(0.5, 1.3), prob = TRUE,
      col=rgb(0.8,0.3,0.6,0.5), main = "Rent Burden of PHA Clients",
      xlab = "Rent Burden", ylab = "Number of Clients") 
+a <- mean(hcv$Total.Compensation, na.rm = TRUE) 
+b <- sd(hcv$Total.Compensation, na.rm = TRUE)
 
-
-# salaries by tenant income
-ggplot(hcv, aes(x=hh_income, y=Total.Compensation), group=region) + 
-  geom_point(aes(shape=region, color=region)) + 
-  scale_x_continuous(name="Income of Tenants") +
-  scale_y_continuous(name="Salary of Highest PHA Employee") +
-  ggtitle("Max PHA employee salary per tenant income") +
-  geom_smooth(method = 'lm')
-
-
-ggplot(hcv, aes(x=hh_income, y=Total.Compensation), group=region) + 
-  geom_point(aes(shape=region, color=region)) + 
-  scale_x_continuous(name="Income of Tenants") +
-  scale_y_continuous(name="Salary of Highest PHA Employee") +
-  ggtitle("Max PHA employee salary per tenant income by region") +
-  geom_smooth(method = 'lm') + facet_wrap(~region)
-
-
-# plotted just to see what it looks like
-ggplot(hcv) + geom_point(aes(x=rent_burden, y=Total.Compensation))
-
+mu <- mean(hcv$rent_burden, na.rm = TRUE)
+sd_rb <- sd(hcv$rent_burden, na.rm = TRUE)
+curve(dnorm(x, mean = a, sd = b), add= TRUE)
 #-------------------------------------------------------------
 # *************************Analysis***************************
 #-------------------------------------------------------------
@@ -227,3 +211,28 @@ hist(diff)
 abline(v=Obs, col = "red") #far from the center of the distribution
 pvalue <- mean(diff > Obs); pvalue #pval of 0. Significant
 ptest
+
+#------------------------------------------------------------
+#      ggplot with linear regression (#11 and #14)
+#------------------------------------------------------------
+
+# total comp by tenant income
+ggplot(hcv, aes(x=hh_income, y=Total.Compensation), group=region) + 
+  geom_point(aes(shape=region, color=region)) + 
+  scale_x_continuous(name="Income of Tenants") +
+  scale_y_continuous(name="Total compensation of PHA Employee") +
+  ggtitle("Max PHA employee total compensation per tenant income") +
+  geom_smooth(method = 'lm')
+
+cor(hcv$Total.Compensation, hcv$hh_income, use = "complete.obs")
+# positive correlation between Total comp and tenant income
+summary(lm(hh_income ~ Total.Compensation, data = hcv))
+# NEED TO STATE HOW GOOD/BAD THIS FIT IS; POTENTIALLY TALK ABOUT RESIDUALS?
+
+ggplot(hcv, aes(x=hh_income, y=Total.Compensation), group=region) + 
+  geom_point(aes(shape=region, color=region)) + 
+  scale_x_continuous(name="Income of Tenants") +
+  scale_y_continuous(name="Salary of Highest PHA Employee") +
+  ggtitle("Max PHA employee total compensation per tenant income by region") +
+  geom_smooth(method = 'lm') + facet_wrap(~region)
+
