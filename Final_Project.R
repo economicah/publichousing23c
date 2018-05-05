@@ -46,29 +46,10 @@ states_fin <- states[, c(1, 3, 4)]
 
 # add census regions to HCV data frame
 hcv <- left_join(hcv, states_fin, by = "state")
-hcv$region <-as.character(hcv$region)
+hcv$region <- as.character(hcv$region)
 hcv$region[is.na(hcv$region)] <- "Island"
-hcv$region<-as.factor(hcv$region)
+hcv$region <- as.factor(hcv$region)
 table(hcv$region)
-
-# island areas (eg Puerto Rico, Virgin Island, etc) don't have a census region, so default to
-# N/A; change region to "islands"
-# Micah - I'm having trouble converting "NA" to islands; keep getting error messages because the 
-# NA is messing things up for some reason. I will look at it with fresh eyes tomorrow and/or
-# maybe ask a coworker
-# this is what I've tried so far:
-#idx <- which(is.na(hcv$region) == TRUE)
-#hcv[idx, hcv$region] <- "islands"
-#hcv$region <- gsub("NA", "islands", hcv$region)
-#replace(hcv$region, is.na(hcv$region), "islands") 
-#levels(hcv$region)
-#hcv$region[is.na(hcv$region)] <- "islands"
-#hcv$region <- as.character(hcv$region)
-#replace(hcv$region, is.na(hcv$region), "islands") 
-#levels(hcv$region)
-#unique(hcv$region)
-# end of effort; comment out this bunch if you plan on running from top to bottom, otherwise
-# it will screw up the levels in the region column
 
 # load PHA executive salary data
 salaries <- read.csv("2014EXEC_COMP.csv"); head(salaries)
@@ -81,19 +62,22 @@ salaries[,4:10] <- sapply(salaries[,4:10], strip_dol)
 # generate dataset of max salary for each PHA
 salaries_max <- salaries %>% group_by(PHA.Code) %>% top_n(1, Total.Compensation) %>% 
   distinct(salaries, PHA.Code, Total.Compensation, .keep_all = TRUE)
-salaries_max$Total.Compensation[salaries_max$Total.Compensation == 0] <- NA # recode missing compensation data as NA rather than 0
+# recode missing compensation data as NA rather than 0
+salaries_max$Total.Compensation[salaries_max$Total.Compensation == 0] <- NA 
 #mean(salaries_max$Total.Compensation,na.rm = TRUE); min(salaries_max$Total.Compensation,na.rm = TRUE); max(salaries_max$Total.Compensation,na.rm = TRUE)
 
-#dummy variable for "receieved bonus"
-salaries_max <- mutate(salaries_max, receive_bonus  = Bonus > 0)
+#dummy variable for "received bonus"
+salaries_max <- mutate(salaries_max, receive_bonus = Bonus > 0)
 salaries_max$receive_bonus[is.na(salaries_max$Total.Compensation)] <- NA
 
-salaries_max<-select(salaries_max,Total.Compensation,code=PHA.Code,receive_bonus)
+# keep only "Total Comp", "PHA Code", and dummy for "received bonus"
+salaries_max <- select(salaries_max, Total.Compensation, code = PHA.Code, receive_bonus)
 
 # add max salary data to HCV data frame
 hcv <- left_join(hcv, salaries_max, by = "code")
 #plot(hcv$hh_income, hcv$Total.Compensation)
 #liz: possible graphic?
+# from Liz: there's a ggplot of this down below, that I need to add colors to still
 
 #------------------------------------------------------------
 #          Create Variables               
@@ -107,8 +91,9 @@ hcv <- mutate(hcv, num_hh = total_units * (pct_occupied/100))
 hcv <- mutate(hcv,poverty_area=tpoverty >=20)
 #head(hcv$poverty_area,hcv$tpoverty)
 
+# micah: don't want to remove the below 3 lines, but the mutation is the same as two above 
 # add number of client households as a new variable
-hcv <- mutate(hcv, num_hh = total_units * (pct_occupied/100))
+# hcv <- mutate(hcv, num_hh = total_units * (pct_occupied/100))
 #sum(hcv$num_hh, na.rm = TRUE)
 
 # add number of female-headed households as a new variable
@@ -129,9 +114,27 @@ hcv <- mutate(hcv, income_monthly  = hh_income/12)
 hcv <- mutate(hcv, rent_burden  = total_rent/income_monthly)
 #mean(hcv$rent_burden, na.rm = TRUE);min(hcv$rent_burden, na.rm = TRUE);max(hcv$rent_burden, na.rm = TRUE)
 
-#table(hcv$receive_bonus,hcv$region)
+table(hcv$receive_bonus,hcv$region)
 #liz they're much more likely to get bonuses in the south looks like
+#micah: I did a permutation test below to see if significant!
 
+south_bonus <- hcv %>% filter(region == "South") %>% pull(receive_bonus)
+sb_mean <- mean(south_bonus, na.rm = TRUE)
+
+region_bonus <- hcv %>% filter(region != "South") %>% pull(receive_bonus)
+rb_mean <- mean(region_bonus, na.rm = TRUE)
+
+obs_diff <- sb_mean - rb_mean
+
+N <- 10^5
+diffs <- numeric(N)
+for (i in 1:N) { 
+  idx <- sample(length(hcv$region), size = length(south_bonus), replace = FALSE)
+  diffs[i] <- mean(hcv$receive_bonus[idx], na.rm = TRUE) - mean(hcv$receive_bonus[-idx], na.rm = TRUE) 
+}
+mean(diffs)
+pvalue_bonus <- (sum(diffs >= obs_diff)+1)/(N+1); pvalue_bonus
+#micah - can you check what I did here? p-value is significant, but it seems too low to be true...
 
 #-------------------------------------------------------------
 # *************************GRAPHICS***************************
