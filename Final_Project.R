@@ -289,7 +289,17 @@ pvalue_bonus <- (sum(diffs >= obs_diff)+1)/(N+1); pvalue_bonus
 #------------------------------------------------------------
 
 # total comp by tenant income
-ggplot(hcv, aes(x=hh_income, y=Total.Compensation), group=region) + 
+# removed Islands from plot, but the linear model isn't changing and I can't figure out why
+ggplot(subset(hcv, region != "Island"), aes(x=hh_income, y=Total.Compensation), 
+       group=region) + 
+  geom_point(aes(shape=region, color=region)) + 
+  scale_x_continuous(name="Average Tenant Household Income",labels=scales::comma) +
+  scale_y_continuous(name="Largest 'Total Compensation' @ PHA",labels=scales::comma) +
+  ggtitle("Relationship between Tenant Income and\n PHA Executive Compensation") +
+  stat_smooth(method = 'lm') + theme_bw()
+
+ggplot(hcv, aes(x=hh_income, y=Total.Compensation), 
+       group=region) + 
   geom_point(aes(shape=region, color=region)) + 
   scale_x_continuous(name="Average Tenant Household Income",labels=scales::comma) +
   scale_y_continuous(name="Largest 'Total Compensation' @ PHA",labels=scales::comma) +
@@ -306,7 +316,7 @@ summary(lm(hh_income ~ Total.Compensation, data = hcv))
 #point of doing it and explaining it-- does that fit into any of the bonus point categories?
 
 ggplot(hcv, aes(x=hh_income, y=Total.Compensation), group=region) + 
-  geom_point(aes(shape=region, color=region)) + 
+  geom_point(aes(shape=region, color=region, alpha = 0.3)) + 
   scale_x_continuous(name="Average Tenant Household Income",labels=scales::comma) +
   scale_y_continuous(name="Largest 'Total Compensation' @ PHA",labels=scales::comma) +
   ggtitle("Relationship between Tenant Income and\n PHA Executive Compensation, by Region") +
@@ -319,5 +329,5 @@ ggplot(hcv, aes(x=num_hh, y=Total.Compensation), group=region) +
   ggtitle("Relationship between Tenant Caseload and\n PHA Executive Compensation") +
   geom_smooth(method = 'lm') + theme_bw()
 #LIZ: this is interesting. play with the x-axis limit. most are clumped <1,000 and it's relatively flat
-#but then there's a really strong, positive relationshiponce the number of clients 
+#but then there's a really strong, positive relationship once the number of clients 
 #gets above that, all the way till 40,000 or so. could this be a candidate for logistic regression?
