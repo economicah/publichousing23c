@@ -308,8 +308,11 @@ summary(lm(hh_income ~ Total.Compensation, data = hcv))
 #is not relevant to analysis of the mainland. what do you think? we could even make a
 #point of doing it and explaining it-- does that fit into any of the bonus point categories?
 
-ggplot(hcv, aes(x=hh_income, y=Total.Compensation)) + 
+
+# trying to determine how to remove outliers: work in progress!
+ggplot(hcv, aes(x=hh_income, y=Total.Compensation, group = region)) + 
   geom_boxplot() + facet_wrap(~ region)
+
 
 # wihout Island outliers
 hcv_mainland <- filter(hcv, hcv$region != "Island")
