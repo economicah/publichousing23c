@@ -3,7 +3,7 @@
 #------------------------------------------------------------
 #!diagnostics off
 rm(list = ls()) #wipes out your environment
-#setwd("~/Documents/Harvard Extension School/Math E-23C/Data/")
+setwd("~/Documents/Harvard Extension School/Math E-23C/Data/")
 
 #install.packages("reshape2")
 library(reshape2)
@@ -83,15 +83,11 @@ hcv <- left_join(hcv, salaries_max, by = "code")
 
 # add number of client households as a new variable
 hcv <- mutate(hcv, num_hh = total_units * (pct_occupied/100))
+#sum(hcv$num_hh, na.rm = TRUE)
 
 # the census bureau designates census tracts with a poverty rate >=20% as "poverty areas"
 hcv <- mutate(hcv, poverty_area = tpoverty >=20)
 #head(hcv$poverty_area,hcv$tpoverty)
-
-# micah: didn't want to remove the below 3 lines, but the mutation is the same as two above 
-# add number of client households as a new variable
-# hcv <- mutate(hcv, num_hh = total_units * (pct_occupied/100))
-#sum(hcv$num_hh, na.rm = TRUE)
 
 # add number of female-headed households as a new variable
 hcv <- mutate(hcv, num_fem = total_units * (pct_occupied/100) * (pct_female_head/100))
@@ -111,27 +107,6 @@ hcv <- mutate(hcv, income_monthly  = hh_income/12)
 hcv <- mutate(hcv, rent_burden  = total_rent/income_monthly)
 #mean(hcv$rent_burden, na.rm = TRUE);min(hcv$rent_burden, na.rm = TRUE);max(hcv$rent_burden, na.rm = TRUE)
 
-table(hcv$receive_bonus,hcv$region)
-#liz they're much more likely to get bonuses in the south looks like
-#micah: I did a permutation test below to see if significant! (and it is)
-
-south_bonus <- hcv %>% filter(region == "South") %>% pull(receive_bonus)
-sb_mean <- mean(south_bonus, na.rm = TRUE)
-
-region_bonus <- hcv %>% filter(region != "South") %>% pull(receive_bonus)
-rb_mean <- mean(region_bonus, na.rm = TRUE)
-
-obs_diff <- sb_mean - rb_mean
-
-N <- 10^5
-diffs <- numeric(N)
-for (i in 1:N) { 
-  idx <- sample(length(hcv$region), size = length(south_bonus), replace = FALSE)
-  diffs[i] <- mean(hcv$receive_bonus[idx], na.rm = TRUE) - mean(hcv$receive_bonus[-idx], na.rm = TRUE) 
-}
-mean(diffs)
-pvalue_bonus <- (sum(diffs >= obs_diff)+1)/(N+1); pvalue_bonus
-#micah - can you check what I did here? p-value is significant, but it seems too low to be true...
 
 #-------------------------------------------------------------
 # *************************GRAPHICS***************************
@@ -158,21 +133,27 @@ ggplot(data = hcv_collapse_melt, aes(x = reorder(region, -value), y = value,
 #      HISTOGRAM (Reqd Graphical Displays #2)
 #------------------------------------------------------------
 
-hist(hcv$Total.Compensation, breaks = "FD", freq = FALSE,
-     col=rgb(0.1,0.5,0.8,0.5), main = "Total Compensation of PHA Executives",
-     xlab = "Total Compensation", ylab = "Number of Executives")
+hist(hcv$Total.Compensation/1000, breaks = "FD", 
+     col=rgb(0.1,0.5,0.8,0.5), main = "Earnings of the Top-Paid Employee at\n every Public Housing Authority",
+     xlab = "Total Compensation (in thousands of dollars)", ylab = "Number of HCV Programs",las=1,xaxt="n",border=F,
+     xlim = c(0, 260), ylim=c(0,300))
+#axis(side=1, at=axTicks(1), 
+  #   labels=formatC(axTicks(1), format="d", big.mark=','))
+axis(side=1, at=seq(0,260,10))
+#LIZ: are you ok making this a freq instead of a probability?
 
-hist(hcv$rent_burden, breaks = "FD", prob = TRUE,
-     col=rgb(0.8,0.3,0.6,0.5), xlim = c(0, 2.5),
-     main = "Rent Burden of PHA Clients",
-     xlab = "Rent Burden", ylab = "Number of Clients") 
+hist(hcv$rent_burden, breaks = "FD", 
+     col=rgb(0.8,0.3,0.6,0.5), xlim = c(0.5, 2.5), ylim=c(0,300),
+     main = "Average Rent Burden",
+     xlab = "Ratio of Household Monthly Income to Pre-Subsidy Rent", ylab = "Number of HCV Programs",border=F) 
 # we had decided we would plot rent_burden with a PDF on it, but the normal 
 # distribution doesn't seem to fit, which is why I decided to do an exp dist. below
 # commented out curve below, if you want to see:
 #mu <- mean(hcv$rent_burden, na.rm = TRUE)
 #sig <- sd(hcv$rent_burden, na.rm = TRUE)
 #curve(dnorm(x, mu, sig), add= TRUE)
-
+#LIZ: i agree with this decision! I made this one a freq also though, rather than prob. 
+# i feel like that's easier to understand if we aren't overlaying a distribution
 
 #------------------------------------------------------------
 #      PDF over HISTOGRAM (Reqd Graphical Displays #3)
@@ -187,7 +168,7 @@ hist(hcv$months_waiting, breaks = "FD", prob = TRUE,
      ylim = c(0,.04),
      col=rgb(0.2,0.8,0.5,0.5),border=F,
      main="Time Spent Waiting for a Home",
-     xlab="Months",ylab="Number of HCV Programs")
+     xlab="Months",ylab="Proportion of HCV Programs")
 
 # add exponential distribution function
 a <- 1/mean(hcv$months_waiting, na.rm = TRUE)
@@ -205,6 +186,8 @@ mean(hcv$months_waiting, na.rm = TRUE)
 
 # Micah, please pick which one we should keep! created bins two different ways
 # have r pick bins based on quantiles
+#LIZ: I don't feel strongly about it, but perhaps the 6 month ones look prettier
+#and are perhaps more meaningful. let's go with that one
 hcv <- mutate(hcv, months_waiting_bin = 
          cut(hcv$months_waiting, breaks = 
                quantile(hcv$months_waiting, probs = seq(0, 1, 0.2), na.rm = TRUE)))
@@ -247,6 +230,7 @@ chisq.test(hcv$mw_bin_2, hcv$poverty_area)
 #      Permutation Test (Reqd Analysis #1)
 #------------------------------------------------------------
 
+#permutation test #1
 PoorInd <- which(hcv$poverty_area); head(PoorInd) #indices for poverty_areas
 
 # Total.Compensation
@@ -261,6 +245,7 @@ Obs <- mean(Total.Compensation[PoorInd],na.rm=TRUE)-mean(Total.Compensation[-Poo
 # the same proportion of each mean); see below:
 6604/87240.89*100
 6604/94427.60*100
+#liz: where did 6604 come from?
 
 # Run a permutation test by scrambling the poverty_area vector 
 N <-10000; diff <- numeric(N)
@@ -275,6 +260,30 @@ abline(v=Obs, col = "red") #far from the center of the distribution
 pvalue <- mean(diff > Obs); pvalue #pval of 0. Significant
 ptest
 
+#permutation test #2
+table(hcv$receive_bonus,hcv$region)
+#liz they're much more likely to get bonuses in the south looks like
+#micah: I did a permutation test below to see if significant! (and it is)
+
+south_bonus <- hcv %>% filter(region == "South") %>% pull(receive_bonus)
+sb_mean <- mean(south_bonus, na.rm = TRUE)
+
+region_bonus <- hcv %>% filter(region != "South") %>% pull(receive_bonus)
+rb_mean <- mean(region_bonus, na.rm = TRUE)
+
+obs_diff <- sb_mean - rb_mean
+
+N <- 10^5
+diffs <- numeric(N)
+for (i in 1:N) { 
+  idx <- sample(length(hcv$region), size = length(south_bonus), replace = FALSE)
+  diffs[i] <- mean(hcv$receive_bonus[idx], na.rm = TRUE) - mean(hcv$receive_bonus[-idx], na.rm = TRUE) 
+}
+mean(diffs)
+pvalue_bonus <- (sum(diffs >= obs_diff)+1)/(N+1); pvalue_bonus
+#micah - can you check what I did here? p-value is significant, but it seems too low to be true...
+#liz: what makes you think it's too low? because it's 0? i think it looks great
+
 #------------------------------------------------------------
 #      ggplot with linear regression (#11 and #14)
 #------------------------------------------------------------
@@ -282,20 +291,33 @@ ptest
 # total comp by tenant income
 ggplot(hcv, aes(x=hh_income, y=Total.Compensation), group=region) + 
   geom_point(aes(shape=region, color=region)) + 
-  scale_x_continuous(name="Income of Tenants") +
-  scale_y_continuous(name="Total compensation of PHA Employee") +
-  ggtitle("Max PHA employee total compensation per tenant income") +
-  geom_smooth(method = 'lm')
+  scale_x_continuous(name="Average Tenant Household Income",labels=scales::comma) +
+  scale_y_continuous(name="Largest 'Total Compensation' @ PHA",labels=scales::comma) +
+  ggtitle("Relationship between Tenant Income and\n PHA Executive Compensation") +
+  geom_smooth(method = 'lm') + theme_bw()
 
 cor(hcv$Total.Compensation, hcv$hh_income, use = "complete.obs")
 # positive correlation between Total comp and tenant income
 summary(lm(hh_income ~ Total.Compensation, data = hcv))
 # NEED TO STATE HOW GOOD/BAD THIS FIT IS; POTENTIALLY TALK ABOUT RESIDUALS?
+#LIZ: i think we should consider removing the island people. they clearly
+#behave differently than everyone else and may be biasing our results in a way that
+#is not relevant to analysis of the mainland. what do you think? we could even make a
+#point of doing it and explaining it-- does that fit into any of the bonus point categories?
 
 ggplot(hcv, aes(x=hh_income, y=Total.Compensation), group=region) + 
   geom_point(aes(shape=region, color=region)) + 
-  scale_x_continuous(name="Income of Tenants") +
-  scale_y_continuous(name="Salary of Highest PHA Employee") +
-  ggtitle("Max PHA employee total compensation per tenant income by region") +
-  geom_smooth(method = 'lm') + facet_wrap(~region)
+  scale_x_continuous(name="Average Tenant Household Income",labels=scales::comma) +
+  scale_y_continuous(name="Largest 'Total Compensation' @ PHA",labels=scales::comma) +
+  ggtitle("Relationship between Tenant Income and\n PHA Executive Compensation, by Region") +
+  geom_smooth(method = 'lm') + facet_wrap(~region) + theme_bw()
 
+ggplot(hcv, aes(x=num_hh, y=Total.Compensation), group=region) + 
+  geom_point(aes(shape=region, color=region)) + 
+  scale_x_continuous(name="Number of Client Households",labels=scales::comma,limits=c(0,1000)) +
+  scale_y_continuous(name="Largest 'Total Compensation' @ PHA",labels=scales::comma) +
+  ggtitle("Relationship between Tenant Caseload and\n PHA Executive Compensation") +
+  geom_smooth(method = 'lm') + theme_bw()
+#LIZ: this is interesting. play with the x-axis limit. most are clumped <1,000 and it's relatively flat
+#but then there's a really strong, positive relationshiponce the number of clients 
+#gets above that, all the way till 40,000 or so. could this be a candidate for logistic regression?
