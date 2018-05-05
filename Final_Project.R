@@ -302,8 +302,11 @@ summary(lm(hh_income ~ Total.Compensation, data = hcv))
 
 
 # trying to determine how to remove outliers: work in progress!
-ggplot(hcv, aes(x=hh_income, y=Total.Compensation, group = region)) + 
-  geom_boxplot() + facet_wrap(~ region)
+hcv_rem_out <- hcv[!hcv$hh_income %in% boxplot(hcv$hh_income)$out,]
+hcv_rem_out <- hcv_rem_out[!hcv_rem_out$Total.Compensation %in% 
+                     boxplot(hcv_rem_out$Total.Compensation)$out,]
+
+
 
 
 # wihout Island outliers
