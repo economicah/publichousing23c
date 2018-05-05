@@ -341,7 +341,7 @@ ggplot(hcv, aes(x=num_hh, y=Total.Compensation), group=region) +
 #      Graphical display diff from class scripts (#19)
 #------------------------------------------------------------
 
-
+# citation (as requested by library(ggmap))
 # D. Kahle and H. Wickham. ggmap: Spatial Visualization with ggplot2. The R
 # Journal, 5(1), 144-161. URL
 # http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf
@@ -349,6 +349,8 @@ ggplot(hcv, aes(x=num_hh, y=Total.Compensation), group=region) +
 usa.map <- get_map(location = 'united states', zoom=4, maptype = "terrain",
                    source = 'google')
 
+# pull out columns we're interested in
+# MICAH - can choose a different variable for this, if you want!
 hcv_map <- select(hcv, longitude, latitude, rent_burden)
 cont_coords <- function(x) (as.numeric(as.character(x)))
 hcv_map[,1:2] <- sapply(hcv_map[,1:2], cont_coords)
