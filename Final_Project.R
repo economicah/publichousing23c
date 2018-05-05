@@ -152,13 +152,11 @@ hcv_collapse_melt <-melt(hcv_collapse,id.var="region")
 #hcv_collapse_melt$variable <- factor(hcv_collapse_melt$variable, levels = c("num_fem.sum"
                                                                          #   ,"num_male.sum"))
 
-ggplot(data = hcv_collapse_melt,
-       aes(x = reorder(region, -value), y = value, fill = factor(variable))) +
-  geom_bar(stat="identity") + theme_bw() + labs(x="Region")  +
+ggplot(data = hcv_collapse_melt, aes(x = reorder(region, -value), y = value, 
+  fill = factor(variable))) + geom_bar(stat="identity") + theme_bw() + labs(x="Region")  +
   ggtitle("Households Receiving Subsidized Housing by Region") +
   scale_y_continuous(name="Count",labels=scales::comma) +
-  theme(legend.position="bottom",legend.direction = "horizontal",
-        legend.title=element_blank()) +
+  theme(legend.position="bottom",legend.direction = "horizontal", legend.title=element_blank()) +
   scale_fill_manual(values=c("steelblue1", "lightpink"),labels=c("Male-Headed", "Female-Headed"))
 
 
@@ -183,13 +181,12 @@ hist(hcv$rent_burden, breaks = "FD", xlim = c(0.5,2),
 
 
 # salaries by tenant income
-ggplot(hcv) + geom_point(aes(x=hh_income, y=Total.Compensation)) + 
+ggplot(hcv, aes(x=hh_income, y=Total.Compensation), group=region) + 
+  geom_point(aes(shape=region, color=region)) + 
   scale_x_continuous(name="Income of Tenants") +
-  scale_y_continuous(name="Salary of Highest PHA Employee")
-# try to remove some of the higher salaries, to see if there is a trend?
-ggplot(hcv) + geom_point(aes(x=hh_income, y=Total.Compensation)) + 
-  scale_x_continuous(name="Income of Tenants", limits=c(0, 30000)) +
-  scale_y_continuous(name="Salary of Highest PHA Employee", limits=c(0, 200000))
+  scale_y_continuous(name="Salary of Highest PHA Employee") +
+  ggtitle("Max PHA employee salary by income of PHA tenants") +
+  geom_smooth(method = 'lm')
 # looks more linear, as we expected
 # segmented out by census region
 ggplot(hcv) + geom_point(aes(x=hh_income, y=Total.Compensation)) + facet_wrap(~ region) +
@@ -208,7 +205,7 @@ ggplot(hcv) + geom_point(aes(x=rent_burden, y=Total.Compensation))
 #      Permutation Test (Reqd Analysis #1)
 #------------------------------------------------------------
 
-PoorInd <- which(hcv$poverty_area); head(PoorInd) #indices for tier 2 maps
+PoorInd <- which(hcv$poverty_area); head(PoorInd) #indices for poverty_areas
 
 # Total.Compensation
 tapply(hcv$Total.Compensation, hcv$poverty_area, mean, na.rm=TRUE)
@@ -226,4 +223,4 @@ head(diff)
 hist(diff)
 abline(v=Obs, col = "red") #far from the center of the distribution
 pvalue <- mean(diff > Obs); pvalue #pval of 0. Significant
-
+ptest
