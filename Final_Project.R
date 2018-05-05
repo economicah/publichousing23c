@@ -337,7 +337,8 @@ ggplot(hcv, aes(x=num_hh, y=Total.Compensation), group=region) +
 #but then there's a really strong, positive relationship once the number of clients 
 #gets above that, all the way till 40,000 or so. could this be a candidate for logistic regression?
 #Micah - whoa! that's incredible; it would be worth a shot! I'm trying to think of how
-# we'd make one of these a categorical; like <1000 households to >= 1000 households?
+# we'd make one of these a categorical; like <1000 households to >= 1000 households? actually,
+# i think the outcome should be the compensation variable. so <100k to >= 100k?
 loess(Total.Compensation ~ num_hh+hh_incom, hcv)
 
 #------------------------------------------------------------
