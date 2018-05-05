@@ -340,6 +340,27 @@ ggplot(hcv, aes(x=num_hh, y=Total.Compensation), group=region) +
 # we'd make one of these a categorical; like <1000 households to >= 1000 households? actually,
 # i think the outcome should be the compensation variable. so <100k to >= 100k?
 
+# attempt at logistic regression
+hcv <- mutate(hcv, total_comp_bin = Total.Compensation >= 150000)
+#plot total.comp bins as a function of number of households
+plot(hcv$num_hh, hcv$total_comp_bin) 
+idx <- which(is.na(hcv$num_hh))
+hcv_logreg <- hcv[-idx,]
+idx <- which(is.na(hcv_logreg$total_comp_bin))
+hcv_logreg <- hcv_logreg[-idx,]
+num_house <- hcv_logreg$num_hh
+total_comp_bin <- hcv_logreg$total_comp_bin
+MLL <- function(alpha, beta) {
+  -sum(log(exp(alpha+beta*num_house)/(1+exp(alpha+beta*num_house)))*total_comp_bin
+       + log(1/(1+exp(alpha+beta*num_house)))*(1-total_comp_bin))
+}
+results <- mle(MLL, start = list(alpha = 0, beta = 0)) #an initial guess is required
+results@coef
+curve(exp(results@coef[1]+results@coef[2]*x)/ 
+         (1+exp(results@coef[1]+results@coef[2]*x)),col = "blue", add=TRUE)
+# Micah - I don't think this looks that great - what are your thoughts?
+# I tried with bins of >= 100k and >= 200k, and those were worse
+# any other indicators you'd want to try?
 
 
 #------------------------------------------------------------
