@@ -338,3 +338,4 @@ ggplot(hcv, aes(x=num_hh, y=Total.Compensation), group=region) +
 #LIZ: this is interesting. play with the x-axis limit. most are clumped <1,000 and it's relatively flat
 #but then there's a really strong, positive relationship once the number of clients 
 #gets above that, all the way till 40,000 or so. could this be a candidate for logistic regression?
+
