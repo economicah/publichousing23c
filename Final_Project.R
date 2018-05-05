@@ -220,7 +220,14 @@ pov_mo_tbl
 Expected <- outer(rowSums(pov_mo_tbl), colSums(pov_mo_tbl))/sum(pov_mo_tbl); Expected
 # Check if the difference between expected and observed is significant
 chisq.test(hcv$mw_bin_2, hcv$poverty_area)
+
 # There is about a 1% chance that the observed contingency table arose by chance
+# Logically this makes sense. Much fewer HCV programs located in poorer
+# places (poverty_area = TRUE) experience short wait times (0-6 months)
+# than we would expect, but many more experience wait times in every other
+#bucket than we would expect if wait time was random. Many more HCV 
+# programs than we would expect in non-poor areas experience short wait times, but
+# many fewer experience wait times in every other bucket
 
 #-------------------------------------------------------------
 # *************************Analysis***************************
