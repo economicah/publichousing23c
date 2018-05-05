@@ -254,6 +254,14 @@ tapply(hcv$Total.Compensation, hcv$poverty_area, mean, na.rm=TRUE)
 Total.Compensation <- hcv$Total.Compensation
 Obs <- mean(Total.Compensation[PoorInd],na.rm=TRUE)-mean(Total.Compensation[-PoorInd],na.rm=TRUE); Obs  
 # difference of $6,064--is this significant?
+
+# Micah - if we want to spin this as our "unexepected" thing, do you think
+# we should show that the difference is 7.5% of the mean for non-poverty area
+# and is 7% of the mean for the poverty area (so it's rather small! and is about 
+# the same proportion of each mean); see below:
+6604/87240.89*100
+6604/94427.60*100
+
 # Run a permutation test by scrambling the poverty_area vector 
 N <-10000; diff <- numeric(N)
 for (i in 1:N) {
