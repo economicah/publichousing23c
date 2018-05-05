@@ -184,19 +184,6 @@ max(hcv$months_waiting, na.rm = TRUE)
 min(hcv$months_waiting, na.rm = TRUE)
 mean(hcv$months_waiting, na.rm = TRUE)
 
-# Micah, please pick which one we should keep! created bins two different ways
-# have r pick bins based on quantiles
-#LIZ: I don't feel strongly about it, but perhaps the 6 month ones look prettier
-#and are perhaps more meaningful. let's go with that one
-hcv <- mutate(hcv, months_waiting_bin = 
-         cut(hcv$months_waiting, breaks = 
-               quantile(hcv$months_waiting, probs = seq(0, 1, 0.2), na.rm = TRUE)))
-# contingency table of months waiting crossed with poverty areas
-table(hcv$months_waiting_bin, hcv$poverty_area)
-
-# OR
-
-# create our own bins 
 attach(hcv)
 hcv$mw_bin_2[hcv$months_waiting < 6] <- "0 to < 6 mo."
 hcv$mw_bin_2[hcv$months_waiting >= 6  & hcv$months_waiting < 12] <- "6 to < 12 mo."
@@ -206,17 +193,17 @@ hcv$mw_bin_2[hcv$months_waiting >= 24  & hcv$months_waiting < 30] <- "24 to < 3 
 hcv$mw_bin_2[hcv$months_waiting >= 30  & hcv$months_waiting < 36] <- "30 to < 36 mo."
 hcv$mw_bin_2[hcv$months_waiting >= 36] <- "36+ mo."
 detach(hcv)
+table(hcv$mw_bin_2)
+# re-order levels so they're chronological categories
 hcv$mw_bin_2 <- as.factor(hcv$mw_bin_2)
 levels(hcv$mw_bin_2)
-# re-order levels so they're chronological categories
 hcv$mw_bin_2 <- factor(hcv$mw_bin_2, levels = 
                          c("0 to < 6 mo.", "6 to < 12 mo.", "12 to < 18 mo.",
                            "18 to < 24 mo.", "24 to < 3 mo.", "30 to < 36 mo.",
                            "36+ mo."))
 # contingency table of months waiting crossed with poverty areas
-pov_mo_tbl <- table(hcv$mw_bin_2, hcv$poverty_area)
+pov_mo_tbl <- table(hcv$mw_bin_2, hcv$poverty_area); pov_mo_tbl
 # Compare with the table that would be expected if the factors were independent
-pov_mo_tbl
 Expected <- outer(rowSums(pov_mo_tbl), colSums(pov_mo_tbl))/sum(pov_mo_tbl); Expected
 # Check if the difference between expected and observed is significant
 chisq.test(hcv$mw_bin_2, hcv$poverty_area)
