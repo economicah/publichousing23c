@@ -143,20 +143,23 @@ pvalue_bonus <- (sum(diffs >= obs_diff)+1)/(N+1); pvalue_bonus
 #------------------------------------------------------------
 #      BARPLOT (Reqd Graphical Displays #1)
 #------------------------------------------------------------
-hcv_collapse <- summaryBy(num_fem+num_male~region,data=hcv,FUN=sum,na.rm=TRUE)
+hcv_collapse <- summaryBy(num_male+num_fem~region,data=hcv,FUN=sum,na.rm=TRUE)
 hcv_collapse_melt <-melt(hcv_collapse,id.var="region")
 
 #liz: trying to get males on top but not working.
+#all set! I just switched their ordering in the hcv_collapse, and then switched ordering in the 
+# ggplot below; I also ordered from highest to lowest
 #hcv_collapse_melt$variable <- factor(hcv_collapse_melt$variable, levels = c("num_fem.sum"
                                                                          #   ,"num_male.sum"))
+
 ggplot(data = hcv_collapse_melt,
-       aes(x = region, y = value, fill = factor(variable))) +
+       aes(x = reorder(region, -value), y = value, fill = factor(variable))) +
   geom_bar(stat="identity") + theme_bw() + labs(x="Region")  +
   ggtitle("Households Receiving Subsidized Housing by Region") +
   scale_y_continuous(name="Count",labels=scales::comma) +
   theme(legend.position="bottom",legend.direction = "horizontal",
         legend.title=element_blank()) +
-  scale_fill_manual(values=c("lightpink","steelblue1"),labels=c("Female-Headed","Male-Headed"))
+  scale_fill_manual(values=c("steelblue1", "lightpink"),labels=c("Male-Headed", "Female-Headed"))
 
 
 #------------------------------------------------------------
@@ -167,11 +170,16 @@ hist(hcv$months_waiting, breaks = "FD",
      ylim=c(0,300), xlim=c(0,150),
      col=rgb(0.2,0.8,0.5,0.5),border=F,
      main="Time Spent Waiting for a Home",
-     xlab="Months",ylab="HCV Programs")
+     xlab="Months",ylab="Number of HCV Programs")
 
 #liz:-- do we want to look at these?
-hist(hcv$Total.Compensation, breaks = "FD", freq = FALSE)
-hist(hcv$rent_burden, breaks = "FD", xlim = c(0,2)) 
+#I've made them look nicer, if we do! 
+hist(hcv$Total.Compensation, breaks = "FD",
+     col=rgb(0.1,0.5,0.8,0.5), main = "Total Compensation of PHA Executives",
+     xlab = "Total Compensation", ylab = "Number of Executives")
+hist(hcv$rent_burden, breaks = "FD", xlim = c(0.5,2),
+     col=rgb(0.8,0.3,0.6,0.5), main = "Rent Burden of PHA Clients",
+     xlab = "Rent Burden", ylab = "Number of Clients") 
 
 
 # salaries by tenant income
@@ -187,17 +195,6 @@ ggplot(hcv) + geom_point(aes(x=hh_income, y=Total.Compensation)) +
 ggplot(hcv) + geom_point(aes(x=hh_income, y=Total.Compensation)) + facet_wrap(~ region) +
   scale_x_continuous(name="Income of Tenants", limits=c(0, 30000)) +
   scale_y_continuous(name="Salary of Highest PHA Employee", limits=c(0, 200000))
-# I THINK the NA are from the US territories that aren't captured in Census regions - do we want 
-# to remove those? there actually seems to be a trend, with tenants in the terrorities being
-# more rent burdened than those in other regions (did a boxplot elsewhere)
-# there are only 81 observations of the territorities, so that would be a caveat of exploring that
-# further, but could be interesting!
-
-idx <- which(is.na(hcv$region) == TRUE)
-hcv[idx, c(71, 77, 78)]
-
-# also, it looks like tenants in the NE consistently have higher income than MW and S, slightly
-# larger than the W
 
 
 # plotted just to see what it looks like
@@ -213,14 +210,15 @@ ggplot(hcv) + geom_point(aes(x=rent_burden, y=Total.Compensation))
 
 PoorInd <- which(hcv$poverty_area); head(PoorInd) #indices for tier 2 maps
 
-#Total.Compensation
-tapply(hcv$Total.Compensation,hcv$poverty_area, mean,na.rm=TRUE)
+# Total.Compensation
+tapply(hcv$Total.Compensation, hcv$poverty_area, mean, na.rm=TRUE)
 Total.Compensation <- hcv$Total.Compensation
-Obs <- mean(Total.Compensation[PoorInd],na.rm=TRUE)-mean(Total.Compensation[-PoorInd],na.rm=TRUE); Obs  #difference of $6,064--is this significant?
-#Run a permutation test by scrambling the tier 2 vector
+Obs <- mean(Total.Compensation[PoorInd],na.rm=TRUE)-mean(Total.Compensation[-PoorInd],na.rm=TRUE); Obs  
+# difference of $6,064--is this significant?
+# Run a permutation test by scrambling the poverty_area vector 
 N <-10000; diff <- numeric(N)
 for (i in 1:N) {
-  scramble <- sample(hcv$poverty_area,length(hcv$poverty_area))
+  scramble <- sample(hcv$poverty_area, length(hcv$poverty_area))
   PoorInd <- which(scramble)
   diff[i] <- mean(Total.Compensation[PoorInd],na.rm=TRUE)-mean(Total.Compensation[-PoorInd],na.rm=TRUE)
 }
