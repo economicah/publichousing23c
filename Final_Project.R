@@ -329,13 +329,16 @@ ggplot(hcv, aes(x=hh_income, y=Total.Compensation), group=region) +
 
 ggplot(hcv, aes(x=num_hh, y=Total.Compensation), group=region) + 
   geom_point(aes(shape=region, color=region)) + 
-  scale_x_continuous(name="Number of Client Households",labels=scales::comma,limits=c(0,1000)) +
+  scale_x_continuous(name="Number of Client Households",labels=scales::comma,limits=c(0,50000)) +
   scale_y_continuous(name="Largest 'Total Compensation' @ PHA",labels=scales::comma) +
   ggtitle("Relationship between Tenant Caseload and\n PHA Executive Compensation") +
-  geom_smooth(method = 'lm') + theme_bw()
+  geom_smooth(method = 'loess') + theme_bw()
 #LIZ: this is interesting. play with the x-axis limit. most are clumped <1,000 and it's relatively flat
 #but then there's a really strong, positive relationship once the number of clients 
 #gets above that, all the way till 40,000 or so. could this be a candidate for logistic regression?
+#Micah - whoa! that's incredible; it would be worth a shot! I'm trying to think of how
+# we'd make one of these a categorical; like <1000 households to >= 1000 households?
+loess(Total.Compensation ~ num_hh+hh_incom, hcv)
 
 #------------------------------------------------------------
 #      Graphical display diff from class scripts (#19)
