@@ -289,15 +289,8 @@ pvalue_bonus <- (sum(diffs >= obs_diff)+1)/(N+1); pvalue_bonus
 #------------------------------------------------------------
 
 # total comp by tenant income
-# removed Islands from plot, but the linear model isn't changing and I can't figure out why
-ggplot(subset(hcv, region != "Island"), aes(x=hh_income, y=Total.Compensation), 
-       group=region) + 
-  geom_point(aes(shape=region, color=region)) + 
-  scale_x_continuous(name="Average Tenant Household Income",labels=scales::comma) +
-  scale_y_continuous(name="Largest 'Total Compensation' @ PHA",labels=scales::comma) +
-  ggtitle("Relationship between Tenant Income and\n PHA Executive Compensation") +
-  stat_smooth(method = 'lm') + theme_bw()
 
+# with Island outliers
 ggplot(hcv, aes(x=hh_income, y=Total.Compensation), 
        group=region) + 
   geom_point(aes(shape=region, color=region)) + 
@@ -314,6 +307,23 @@ summary(lm(hh_income ~ Total.Compensation, data = hcv))
 #behave differently than everyone else and may be biasing our results in a way that
 #is not relevant to analysis of the mainland. what do you think? we could even make a
 #point of doing it and explaining it-- does that fit into any of the bonus point categories?
+
+ggplot(hcv, aes(x=hh_income, y=Total.Compensation)) + 
+  geom_boxplot() + facet_wrap(~ region)
+
+# wihout Island outliers
+hcv_mainland <- filter(hcv, hcv$region != "Island")
+ggplot(hcv_mainland, aes(x=hh_income, y=Total.Compensation), 
+       group=region) + 
+  geom_point(aes(shape=region, color=region)) + 
+  scale_x_continuous(name="Average Tenant Household Income",labels=scales::comma) +
+  scale_y_continuous(name="Largest 'Total Compensation' @ PHA",labels=scales::comma) +
+  ggtitle("Relationship between Tenant Income and\n PHA Executive Compensation") +
+  stat_smooth(method = 'lm') + theme_bw()
+
+cor(hcv_mainland$Total.Compensation, hcv_mainland$hh_income, use = "complete.obs")
+# positive correlation between Total comp and tenant income
+summary(lm(hh_income ~ Total.Compensation, data = hcv_mainland))
 
 ggplot(hcv, aes(x=hh_income, y=Total.Compensation), group=region) + 
   geom_point(aes(shape=region, color=region, alpha = 0.3)) + 
