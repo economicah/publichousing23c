@@ -354,7 +354,7 @@ MLL <- function(alpha, beta) {
   -sum(log(exp(alpha+beta*num_house)/(1+exp(alpha+beta*num_house)))*total_comp_bin
        + log(1/(1+exp(alpha+beta*num_house)))*(1-total_comp_bin))
 }
-results <- mle(MLL, start = list(alpha = 0, beta = 0)) #an initial guess is required
+results <- mle(MLL, start = list(alpha = 0, beta = 0))
 results@coef
 curve(exp(results@coef[1]+results@coef[2]*x)/ 
          (1+exp(results@coef[1]+results@coef[2]*x)),col = "blue", add=TRUE)
