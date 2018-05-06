@@ -493,8 +493,7 @@ map <- map_data("state")
 ggplot(hcv_state, aes(fill = mean_rb)) + 
   geom_map(aes(map_id = state), map = map) + 
   expand_limits(x = map$long, y = map$lat) +
-  scale_fill_gradient("Mean Rent\nBurden", low='grey',
-                      high='darkblue') + 
+  scale_fill_gradient("Mean Rent\nBurden", low='grey', high='darkblue') + 
   ggtitle("Mean Rent Burden across the United States") +
   coord_map(projection="mercator",xlim=c(-125, -66), ylim=c(25, 50)) +
   theme(axis.text.x = element_blank(),
