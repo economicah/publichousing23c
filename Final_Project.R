@@ -152,8 +152,8 @@ ggplot(data = hcv_collapse_melt, aes(x = reorder(region, -value), y = value,
 
 # create histogram of Total Compensation
 hist(hcv$Total.Compensation/1000, breaks = "FD", 
-     col=rgb(0.1,0.5,0.8,0.5), main = "Earnings of the Top-Paid Employee at\n every Public Housing Authority",
-     xlab = "Total Compensation (in thousands of dollars)", ylab = "Number of HCV Programs",las=1,xaxt="n",border=F,
+     col=rgb(0.1,0.5,0.8,0.5), main = "Total Compensation of\n Highest-Paid Employee",
+     xlab = "Total Compensation (in thousands of dollars)", ylab = "Count of HCV Programs",las=1,xaxt="n",border=F,
      xlim = c(0, 260), ylim=c(0,300))
 #axis(side=1, at=axTicks(1), 
 #   labels=formatC(axTicks(1), format="d", big.mark=','))
@@ -164,7 +164,7 @@ axis(side=1, at=seq(0,260,10))
 hist(hcv$rent_burden, breaks = "FD", 
      col=rgb(0.8,0.3,0.6,0.5), xlim = c(0.5, 2.5), ylim=c(0,300),
      main = "Average Rent Burden",
-     xlab = "Ratio of Pre-Subsidy Rent to Household Monthly Income", ylab = "Number of HCV Programs",border=F) 
+     xlab = "Ratio of Pre-Subsidy Rent to Household Monthly Income", ylab = "Count of HCV Programs",border=F) 
 
 
 #------------------------------------------------------------
