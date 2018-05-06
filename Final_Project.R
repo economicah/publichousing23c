@@ -229,6 +229,7 @@ chisq.test(hcv$mw_bin, hcv$poverty_area)
 #---------------------------------------------------------------------
 #      Permutation Test (Reqd Analysis #1)
 #      Comparison of analysis by classical methods (Reqd Analysis #4)
+#      Permutation test works better than classical methods (#12)
 #---------------------------------------------------------------------
 
 #permutation test #1
@@ -384,7 +385,7 @@ summary(lm(hh_income ~ Total.Compensation, data = hcv))
 #Removing the ~300 outliers didn't change the fit of the linear model or the correlation
 
 #------------------------------------------------------------------
-#      Calculation and display of logistic regression curve, #15)
+#      Calculation and display of logistic regression curve (#15)
 #------------------------------------------------------------------
 
 ggplot(hcv, aes(x=num_hh, y=Total.Compensation), group=region) + 
