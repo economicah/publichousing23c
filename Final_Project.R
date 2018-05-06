@@ -381,7 +381,7 @@ ggplot(hcv_no_out, aes(x=hh_income, y=Total.Compensation),
   geom_smooth(method = 'lm') + theme_bw()
 cor(hcv$Total.Compensation, hcv$hh_income, use = "complete.obs")
 summary(lm(hh_income ~ Total.Compensation, data = hcv))
-#Removing the ~300 outliers didn't change the fit of the linear model
+#Removing the ~300 outliers didn't change the fit of the linear model or the correlation
 
 #------------------------------------------------------------------
 #      Calculation and display of logistic regression curve, #15)
@@ -441,6 +441,7 @@ curve(exp(results@coef[1]+results@coef[2]*x)/
 # Journal, 5(1), 144-161. URL
 # http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf
 
+library(ggmap) #for some reason, I had to call this library again for the next step to work
 usa.map <- get_map(location = 'united states', zoom=4, maptype = "terrain",
                    source = 'google')
 
@@ -449,6 +450,8 @@ usa.map <- get_map(location = 'united states', zoom=4, maptype = "terrain",
 hcv_map <- select(hcv, longitude, latitude, rent_burden)
 cont_coords <- function(x) (as.numeric(as.character(x)))
 hcv_map[,1:2] <- sapply(hcv_map[,1:2], cont_coords)
+
+attr(usa.map, "bb") #get correct limits of US map to add into plot
 ggmap(usa.map) + geom_point(aes(x=longitude, y=latitude, colour=rent_burden), 
                             data=hcv_map, size = 0.5, na.rm = TRUE)  + 
   scale_color_gradient("Rent\nBurden", low="blue", high="red") + 
@@ -461,8 +464,6 @@ ggmap(usa.map) + geom_point(aes(x=longitude, y=latitude, colour=rent_burden),
         axis.title.y=element_blank(),
         axis.title.x=element_blank(),
         plot.title = element_text(hjust = 0.5))
-
-attr(usa.map, "bb") #get correct limits of US map to add into plot
 
 #different type of map, representing mean rent burden across the continental US
 hcv_state <- hcv %>% group_by(states) %>% summarise(mean_rb = mean(rent_burden, na.rm = TRUE))
