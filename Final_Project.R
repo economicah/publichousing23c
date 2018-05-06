@@ -449,7 +449,6 @@ curve(exp(results@coef[1]+results@coef[2]*x)/
         (1+exp(results@coef[1]+results@coef[2]*x)),col = "blue", add=TRUE)
 # does this look better or worse than the other log reg curve?
 
-
 #------------------------------------------------------------
 #      Graphical display diff from class scripts (#19)
 #------------------------------------------------------------
