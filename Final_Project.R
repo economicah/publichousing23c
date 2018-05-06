@@ -339,3 +339,20 @@ ggplot(hcv, aes(x=num_hh, y=Total.Compensation), group=region) +
 #but then there's a really strong, positive relationship once the number of clients 
 #gets above that, all the way till 40,000 or so. could this be a candidate for logistic regression?
 
+#------------------------------------------------------------
+#          Calculate Confidence Interval                
+#------------------------------------------------------------
+
+#If we use our sample standard deviation S, we create a t statistic.
+#Studentize the data, using S instead of the national sigma.
+ourpct_welfare_major <- mean(hcv_mainland$pct_welfare_major,na.rm =TRUE); ourpct_welfare_major   #surprisingly high
+S <- sd(hcv_mainland$pct_welfare_major,na.rm =TRUE); S
+t = (ourpct_welfare_major-mu)/(S/sqrt(n)); t 
+PValue <- pt(t, df = n-1, lower.tail = FALSE); PValue
+#The p-value is much smaller, because our S is smaller than sigma
+curve(dnorm(x, mu, S/sqrt(n)), from = 560, to = 640)
+abline(v = ourpct_welfare_major, col = "red")     #our mean score looks really good
+
+#For n this large, the t distribution is essentially standard normal
+t = (ourpct_welfare_major-mu)/(sigma/sqrt(n)); t 
+PValue <- pt(t, df = n-1, lower.tail = FALSE); PValue #same as earlier result
