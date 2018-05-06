@@ -221,7 +221,7 @@ chisq.test(hcv$mw_bin, hcv$poverty_area)
 #      Permutation test works better than classical methods (#12)
 #---------------------------------------------------------------------
 
-#permutation test #1
+#Permutation test #1-- High poverty areas by executive compensation
 PoorInd <- which(hcv$poverty_area); head(PoorInd) #indices for poverty_areas (defined above
 #as geographic areas where >20% of the population lives below poverty line)
 
@@ -253,9 +253,7 @@ chisq.test(hcv$poverty_area, hcv$Total.Compensation)
 # computational techniques clearly work better than classical methods #12" because the chi-sq
 # came back with a p-value stating this relationship isn't significant
 
-# MICAH: we can get rid of teh next perm test if you want, I feel like yours is more 
-# "significant" and interesting
-#permutation test #2
+#Permutation Test #2-- Are southern executives more likely to receive bonuses?
 table(hcv$receive_bonus,hcv$region)
 south_bonus <- hcv %>% filter(region == "South") %>% pull(receive_bonus)
 sb_mean <- mean(south_bonus, na.rm = TRUE)
@@ -274,9 +272,14 @@ mean(diffs)
 hist(diffs)
 abline(v=obs_diff, col = "red") 
 # also WTF, the line isn't adding to the histogram!
+#LIZ: this is because the observed is too high (lol). .107 whereas the histogram only goes to 0.05. (run the code below)
+hist(diffs, xlim=(c(0,.15)))
+abline(v=obs_diff, col = "red") 
+
 pvalue_bonus <- (sum(diffs >= obs_diff)+1)/(N+1); pvalue_bonus
 #micah - can you check what I did here? p-value is significant, but it seems too low to be true...
-#liz: what makes you think it's too low? because it's 0? i think it looks great
+#liz: what makes you think it's too low? because it's 0? i think it looks great. as you can see 
+#with the code above, this value is extremely unlikely to see by pure chance
 
 #------------------------------------------------------------
 #      ggplot with linear regression (#11 and #14)
