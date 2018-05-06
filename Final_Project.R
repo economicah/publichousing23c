@@ -118,12 +118,17 @@ hcv <- mutate(hcv, rent_burden  = total_rent/income_monthly)
 #------------------------------------------------------------
 #      BARPLOT (Reqd Graphical Displays #1)
 #------------------------------------------------------------
+
+# create data frame with total number of female heads of households and male head of households
+# by census region
 hcv_collapse <- summaryBy(num_male+num_fem~region,data=hcv,FUN=sum,na.rm=TRUE)
+# melt that data frame
 hcv_collapse_melt <-melt(hcv_collapse,id.var="region")
 
 #hcv_collapse_melt$variable <- factor(hcv_collapse_melt$variable, levels = c("num_fem.sum"
                                                                          #   ,"num_male.sum"))
 
+# create stacked barplot of heads of households by region
 ggplot(data = hcv_collapse_melt, aes(x = reorder(region, -value), y = value, 
   fill = factor(variable))) + geom_bar(stat="identity") + theme_bw() + labs(x="Region")  +
   ggtitle("Households Receiving Subsidized Housing\n by Region") +
@@ -133,20 +138,21 @@ ggplot(data = hcv_collapse_melt, aes(x = reorder(region, -value), y = value,
   theme(plot.title = element_text(hjust = 0.5))
   
 
-
 #------------------------------------------------------------
 #      HISTOGRAM (Reqd Graphical Displays #2)
 #------------------------------------------------------------
 
+# create histogram of Total Compensation
 hist(hcv$Total.Compensation/1000, breaks = "FD", 
      col=rgb(0.1,0.5,0.8,0.5), main = "Earnings of the Top-Paid Employee at\n every Public Housing Authority",
      xlab = "Total Compensation (in thousands of dollars)", ylab = "Number of HCV Programs",las=1,xaxt="n",border=F,
      xlim = c(0, 260), ylim=c(0,300))
 #axis(side=1, at=axTicks(1), 
   #   labels=formatC(axTicks(1), format="d", big.mark=','))
+# add axis tick marks
 axis(side=1, at=seq(0,260,10))
 
-
+# create histogram of average rent burden
 hist(hcv$rent_burden, breaks = "FD", 
      col=rgb(0.8,0.3,0.6,0.5), xlim = c(0.5, 2.5), ylim=c(0,300),
      main = "Average Rent Burden",
@@ -162,13 +168,14 @@ hist(hcv$rent_burden, breaks = "FD",
      #main="Time Spent Waiting for a Home",
      #xlab="Months",ylab="Number of HCV Programs")
 
+# create histogram of average months waiting
 hist(hcv$months_waiting, breaks = "FD", prob = TRUE,
      ylim = c(0,.04),
      col=rgb(0.2,0.8,0.5,0.5),border=F,
      main="Time Spent Waiting for a Home",
      xlab="Average Months",ylab="Proportion of HCV Programs",xaxt="n")
 axis(side=1, at=seq(0,200,10))
-# add exponential distribution function
+# overlay exponential distribution function
 a <- 1/mean(hcv$months_waiting, na.rm = TRUE)
 curve(dexp(x, a), add = TRUE)
 
@@ -185,6 +192,7 @@ max(hcv$months_waiting, na.rm = TRUE)
 min(hcv$months_waiting, na.rm = TRUE)
 mean(hcv$months_waiting, na.rm = TRUE)
 
+# create bins of average months waiting
 attach(hcv)
 hcv$mw_bin[hcv$months_waiting < 6] <- "0 to < 6 mo."
 hcv$mw_bin[hcv$months_waiting >= 6  & hcv$months_waiting < 12] <- "6 to < 12 mo."
@@ -201,7 +209,7 @@ hcv$mw_bin <- factor(as.factor(hcv$mw_bin), levels =
                            "18 to < 24 mo.", "24 to < 3 mo.", "30 to < 36 mo.",
                            "36+ mo."))
 table(hcv$mw_bin)
-# contingency table of months waiting crossed with poverty areas
+# create contingency table of months waiting crossed with poverty areas
 pov_mo_tbl <- table(hcv$mw_bin, hcv$poverty_area); pov_mo_tbl
 # Compare with the table that would be expected if the factors were independent
 Expected <- outer(rowSums(pov_mo_tbl), colSums(pov_mo_tbl))/sum(pov_mo_tbl); Expected
@@ -226,11 +234,12 @@ chisq.test(hcv$mw_bin, hcv$poverty_area)
 #      Permutation test works better than classical methods (#12)
 #---------------------------------------------------------------------
 
-#Permutation test #1-- High poverty areas by executive compensation
+# Permutation test #1-- High poverty areas by executive compensation
 PoorInd <- which(hcv$poverty_area); head(PoorInd) #indices for poverty_areas (defined above
-#as geographic areas where >20% of the population lives below poverty line)
+# as geographic areas where >20% of the population lives below poverty line)
 
 # Total.Compensation = Compensation of highest paid employee at HCV Program
+# display mean Total Comp for poverty areas vs non-poverty area (true and false, respectively)
 tapply(hcv$Total.Compensation, hcv$poverty_area, mean, na.rm=TRUE)
 Total.Compensation <- hcv$Total.Compensation
 Obs <- mean(Total.Compensation[PoorInd],na.rm=TRUE)-mean(Total.Compensation[-PoorInd],na.rm=TRUE); Obs  
@@ -247,6 +256,8 @@ head(diff)
 hist(diff)
 abline(v=Obs, col = "red") #far from the center of the distribution
 pvalue <- mean(diff > Obs); pvalue #pval of 0. Significant
+pvalue <- sum((diff >= Obs)-1)
+pvalue <- (sum(diff >= Obs)+1)/(N+1); pvalue 
 
 #Unexpected thing #1: We expected that being located in a high-poverty area would be associated
 # with LOWER executive pay. It would make sense that if a lot of the people in a town fall under
@@ -254,6 +265,13 @@ pvalue <- mean(diff > Obs); pvalue #pval of 0. Significant
 # (rent, food, gas, etc) would be lower for everyone in the town. In addition, job opportunities
 #are probably scarcer so wages are lower. We were surprised to find that executives in 
 #high poverty areas actually receive statistically significantly higher total compensation.
+
+# comparison with classical methods (req'd analysis #4)
+t.test(hcv$Total.Compensation~hcv$poverty_area)
+# the classical method (t.test) and the simulation method both result in a significant
+# pvalue; however, the permutation test returns a slightly higher p-value than the t.test;
+# the permutation test is a better method at demonstrating the significant relationship
+# between the two means
 
 summary(lm(Total.Compensation ~ poverty_area, data = hcv))
 #LIZ: could this be the comparison with classical?
