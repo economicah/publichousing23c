@@ -80,3 +80,5 @@ ggplot(data = hcv_collapse_melt, aes(x = reorder(region, -value), y = value,
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
+### Total Compensation of Public Housing Authority Executives
+Next, we looked at the distribution 
