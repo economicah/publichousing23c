@@ -267,7 +267,7 @@ pvalue <- mean(diff > Obs); pvalue #pval of 0. Significant
 pvalue <- sum((diff >= Obs)-1)
 pvalue <- (sum(diff >= Obs)+1)/(N+1); pvalue 
 
-#Unexpected thing #1: We expected that being located in a high-poverty area would be associated
+# Unexpected thing #1: We expected that being located in a high-poverty area would be associated
 # with LOWER executive pay. It would make sense that if a lot of the people in a town fall under
 # the poverty line, which is calculated at a national level, that cost of living in the area
 # (rent, food, gas, etc) would be lower for everyone in the town. In addition, job opportunities
@@ -281,9 +281,7 @@ t.test(hcv$Total.Compensation~hcv$poverty_area)
 # the permutation test is a better method at demonstrating the significant relationship
 # between the two means
 
-
-
-#Permutation Test #2-- Are southern executives more likely to receive bonuses?
+# Permutation Test #2-- Are southern executives more likely to receive bonuses?
 table(hcv$receive_bonus,hcv$region)
 south_bonus <- hcv %>% filter(region == "South") %>% pull(receive_bonus)
 sb_mean <- mean(south_bonus, na.rm = TRUE)
@@ -306,6 +304,27 @@ pvalue_bonus <- (sum(diffs >= obs_diff)+1)/(N+1); pvalue_bonus
 # p-value is virtually 0; There is < 0.1% chance of this difference arising by chance.
 # Southern executives are more likely to receive bonuses than the executives in the rest of the
 # country.
+
+
+# Permutation test #3 - difference between mean months waiting by poor/non-poor areas
+mw <- hcv$months_waiting
+obs_mw <- mean(mw[PoorInd], na.rm = TRUE) - mean(mw[-PoorInd], na.rm = TRUE); obs_mw
+
+N <- 10^5
+diffs <- numeric(N)
+for (i in 1:N) { 
+  scramble <- sample(hcv$poverty_area, length(hcv$poverty_area), replace = FALSE)
+  index <- which(scramble)
+  diffs[i] <- mean(mw[index],na.rm=TRUE)-mean(mw[-index],na.rm=TRUE)
+}
+mean(diffs)
+hist(diffs, prob = TRUE)
+abline(v=obs_mw, col="red") #looks like our observed differenced falls within the distribution
+pvalue <- (sum(diffs >= obs_mw)+1)/(N+1); pvalue 
+t.test(hcv$months_waiting ~ hcv$poverty_area)
+# According to our permutation test, there's a 95% chance of the difference in mean waiting times between poor and 
+# non poor areas occurring by change. However, according to the t-test, there's a 12% change of this occurring by
+# chance. The permutation test is superior to the t-test and this difference in means is definitely not significant.
 
 #------------------------------------------------------------
 #      ggplot with linear regression (#11 and #14)
