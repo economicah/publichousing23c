@@ -286,6 +286,16 @@ pvalue_bonus <- (sum(diffs >= obs_diff)+1)/(N+1); pvalue_bonus
 #      appropriate use of correlation (#16)
 #------------------------------------------------------------
 
+cor(hcv$Total.Compensation, hcv$hh_income, use = "complete.obs")
+# positive correlation between Total comp and tenant income
+# with increasing average tenant household income, the largest total compensation observed
+# in the PHA increases
+summary(lm(Total.Compensation ~ hh_income, data = hcv))
+# only 6% of the variability in Total Compensation can be explained by the income of the 
+# PHA tenants. However, the relationship between Total Comp and tenant income is significant
+# (p-value virtually = 0). There are other variables that likely contribute to the 
+# variability in Total Comp. 
+
 # total comp by tenant income
 ggplot(hcv, aes(x=hh_income, y=Total.Compensation), 
        group=region) + 
@@ -296,19 +306,17 @@ ggplot(hcv, aes(x=hh_income, y=Total.Compensation),
   geom_smooth(method = 'lm') + theme_bw() + 
   theme(plot.title = element_text(hjust = 0.5))
 
-cor(hcv$Total.Compensation, hcv$hh_income, use = "complete.obs")
-# positive correlation between Total comp and tenant income
-# with increasing average tenant household income, the largest PHA total compensation
-# increases
-summary(lm(Total.Compensation ~ hh_income, data = hcv))
-# only 6% of the variability in Total Compensation can be explained by the income of the 
-# PHA tenants. However, the relationship between Total Comp and tenant income is significant
-# (p-value virtually = 0). There are other variables that likely contribute to the 
-# variability in Total Comp. 
-
 # as we can see in the plot, the Island region is skewed to the left - could it 
 # be affecting the fit of the model?
-# wihout Island outliers
+
+cor(hcv_mainland$Total.Compensation, hcv_mainland$hh_income, use = "complete.obs")
+# positive correlation (as we saw above) and is basically the same correlation seen
+# with all regions included
+summary(lm(hh_income ~ Total.Compensation, data = hcv_mainland))
+# very slightly higher R-squared value (0.067 vs 0.064), so virtually no change in the fit
+# of the linear model
+
+# plot wihout Island outliers
 hcv_mainland <- filter(hcv, hcv$region != "Island")
 ggplot(hcv_mainland, aes(x=hh_income, y=Total.Compensation), 
        group=region) + 
@@ -318,13 +326,6 @@ ggplot(hcv_mainland, aes(x=hh_income, y=Total.Compensation),
   ggtitle("Relationship between Tenant Income\nand PHA Executive Compensation") +
   stat_smooth(method = 'lm') + theme_bw() +
   theme(plot.title = element_text(hjust = 0.5))
-
-cor(hcv_mainland$Total.Compensation, hcv_mainland$hh_income, use = "complete.obs")
-# positive correlation (as we saw above) and is basically the same correlation seen
-# with all regions included
-summary(lm(hh_income ~ Total.Compensation, data = hcv_mainland))
-# very slightly higher R-squared value (0.067 vs 0.064), so virtually no change in the fit
-# of the linear model
 
 # to see the trends in the regions separately (out of interest):
 ggplot(hcv, aes(x=hh_income, y=Total.Compensation), group=region) + 
@@ -343,21 +344,20 @@ ggplot(hcv, aes(x=hh_income, y=Total.Compensation), group=region) +
 # (total comp by tenant income), we'll remove the outliers from the data
 # first remove outliers from tenant income (hh_income)
 hcv_no_out <- hcv[!hcv$hh_income %in% boxplot.stats(hcv$hh_income)$out,]
+
 # look at difference on histogram
-hist(hcv$hh_income, prob = TRUE, ylim = c(0, .00025), 
+hist(hcv$hh_income, ylim = c(0, .00025), probability = TRUE,
      col = rgb(0.2, 0.4, 0.8, 0.3), main = "Income of Tenants at every 
-     Public Housing Authority", xlab = "Annual Income (in dollars)")
-hist(hcv_no_out$hh_income, col = rgb(0.1,0.7,0.2,0.5), prob =TRUE, add = TRUE)
-# now remove the outliers of total comp from this dataset
-# MICAH - help wanted! is it appropriate to remove the total comp from this new dataset
-# OR should we base the removal of the outliers off of the total comp outliers in the original
-# dataset (see below for differences)
-# based off of original dataset
+     Public Housing Authority", xlab = "Annual Income (in dollars)", breaks = "FD")
+hist(hcv_no_out$hh_income, col = rgb(0.1,0.7,0.2,0.5), probability = TRUE, breaks = "FD",add = TRUE)
+#we see here that removing the outliers makes it much more likely to observe annual income
+#close to the mean, and much less likely (probability = 0%) to see values above 20k or
+#below 5k
+
+
+# now remove the outliers of total comp from this dataset based off of original dataset
 hcv_no_out <- hcv_no_out[!hcv_no_out$Total.Compensation %in% 
                            boxplot.stats(hcv$Total.Compensation)$out,]
-# based off of new dataset (with hh_income outliers removed)
-hcv_no_out <- hcv_no_out[!hcv_no_out$Total.Compensation %in% 
-                     boxplot.stats(hcv_no_out$Total.Compensation)$out,]
 
 ggplot(hcv_no_out, aes(x=hh_income, y=Total.Compensation), 
        group=region) + 
