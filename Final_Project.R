@@ -431,6 +431,24 @@ curve(exp(results@coef[1]+results@coef[2]*x)/
 # I tried with bins of >= 100k and >= 200k, and those were worse
 # any other indicators you'd want to try?
 
+#plot total comp as function of total rent
+plot(hcv$total_rent, hcv$total_comp_bin) 
+idx <- which(is.na(hcv$total_rent))
+hcv_logreg <- hcv[-idx,]
+idx <- which(is.na(hcv_logreg$total_comp_bin))
+hcv_logreg <- hcv_logreg[-idx,]
+rent <- hcv_logreg$total_rent
+tcomp <- hcv_logreg$total_comp_bin
+MLL <- function(alpha, beta) {
+  -sum(log(exp(alpha+beta*rent)/(1+exp(alpha+beta*rent)))*tcomp
+       + log(1/(1+exp(alpha+beta*rent)))*(1-tcomp))
+}
+results <- mle(MLL, start = list(alpha = 0, beta = 0))
+results@coef
+curve(exp(results@coef[1]+results@coef[2]*x)/ 
+        (1+exp(results@coef[1]+results@coef[2]*x)),col = "blue", add=TRUE)
+# does this look better or worse than the other log reg curve?
+
 
 #------------------------------------------------------------
 #      Graphical display diff from class scripts (#19)
