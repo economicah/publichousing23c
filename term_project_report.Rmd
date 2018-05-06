@@ -81,4 +81,11 @@ ggplot(data = hcv_collapse_melt, aes(x = reorder(region, -value), y = value,
 ```
 
 ### Total Compensation of Public Housing Authority Executives
-Next, we looked at the distribution of the maximum Total Compensation 
+Next, we looked at the distribution of the maximum Total Compensation <will write story after putting in all graphics>
+```{r echo=FALSE}
+hist(hcv$Total.Compensation/1000, breaks = "FD", 
+     col=rgb(0.1,0.5,0.8,0.5), main = "Earnings of the Top-Paid Employee at\n every Public Housing Authority",
+     xlab = "Total Compensation (in thousands of dollars)", ylab = "Number of HCV Programs",las=1,xaxt="n",border=F,
+     xlim = c(0, 260), ylim=c(0,300))
+axis(side=1, at=seq(0,260,10))
+```
