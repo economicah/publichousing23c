@@ -469,7 +469,7 @@ cont_coords <- function(x) (as.numeric(as.character(x)))
 hcv_map[,1:2] <- sapply(hcv_map[,1:2], cont_coords)
 
 attr(usa.map, "bb") #get correct limits of US map to add into plot
-ggmap(usa.map) + geom_point(aes(x=longitude, y=latitude, colour=rent_burden), 
+plot_all <- ggmap(usa.map) + geom_point(aes(x=longitude, y=latitude, colour=rent_burden), 
                             data=hcv_map, size = 0.5, na.rm = TRUE)  + 
   scale_color_gradient("Rent\nBurden", low="blue", high="red") + 
   ggtitle("Rent Burden Across the United States") +
@@ -481,6 +481,7 @@ ggmap(usa.map) + geom_point(aes(x=longitude, y=latitude, colour=rent_burden),
         axis.title.y=element_blank(),
         axis.title.x=element_blank(),
         plot.title = element_text(hjust = 0.5))
+plot_all
 
 #different type of map, representing mean rent burden across the continental US
 hcv_state <- hcv %>% group_by(states) %>% summarise(mean_rb = mean(rent_burden, na.rm = TRUE))
@@ -490,7 +491,7 @@ hcv_state <- mutate(hcv_state, state = tolower(state_name))
 hcv_state <- hcv_state[,3:4]
 
 map <- map_data("state")
-ggplot(hcv_state, aes(fill = mean_rb)) + 
+plot_mean <- ggplot(hcv_state, aes(fill = mean_rb)) + 
   geom_map(aes(map_id = state), map = map) + 
   expand_limits(x = map$long, y = map$lat) +
   scale_fill_gradient("Mean Rent\nBurden", low='grey', high='darkblue') + 
@@ -503,3 +504,10 @@ ggplot(hcv_state, aes(fill = mean_rb)) +
         axis.title.y=element_blank(),
         axis.title.x=element_blank(),
         plot.title = element_text(hjust = 0.5))
+plot_mean
+
+# MICAH: could even show them together, if we want to; 
+# at this point, i'm just playing around with things
+install.packages(gridExtra)
+library(gridExtra)
+grid.arrange(plot_all, plot_mean, nrow=2)
