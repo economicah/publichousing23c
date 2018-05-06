@@ -246,12 +246,6 @@ head(diff)
 hist(diff)
 abline(v=Obs, col = "red") #far from the center of the distribution
 pvalue <- mean(diff > Obs); pvalue #pval of 0. Significant
-pvalue_ll <- (sum(diff >= Obs)+1)/(N+1); pvalue_ll
-# MICAH: what's the difference between calculating the pvalue the first way vs the 
-# way I just added?
-#LIZ: no idea. where did you get your formula?
-
-
 
 #Unexpected thing #1: We expected that being located in a high-poverty area would be associated
 # with LOWER executive pay. It would make sense that if a lot of the people in a town fall under
@@ -262,8 +256,7 @@ pvalue_ll <- (sum(diff >= Obs)+1)/(N+1); pvalue_ll
 
 summary(lm(Total.Compensation ~ poverty_area, data = hcv))
 #LIZ: could this be the comparison with classical?
-# MICAH: got it from all of Paul's scripts! where did you get yours?
-#Liz: from the XPLoot one!
+
 
 
 #Permutation Test #2-- Are southern executives more likely to receive bonuses?
@@ -312,6 +305,9 @@ ggplot(hcv, aes(x=pct_minority, y=Total.Compensation, color=pct_minority)) +
 # executive compensation increases by $414, and it's statistically significant! We expected
 #these things to be unrelated
 
+
+# Another relationship demonstrated with ggplot, correlation, and linear regression
+# Total comp by tenant income
 cor(hcv$Total.Compensation, hcv$hh_income, use = "complete.obs")
 # positive correlation between Total comp and tenant income
 # with increasing average tenant household income, the largest total compensation observed
@@ -322,7 +318,6 @@ summary(lm(Total.Compensation ~ hh_income, data = hcv))
 # (p-value virtually = 0). There are other variables that likely contribute to the 
 # variability in Total Comp. 
 
-# total comp by tenant income
 ggplot(hcv, aes(x=hh_income, y=Total.Compensation), 
        group=region) + 
   geom_point(aes(shape=region, color=region)) + 
