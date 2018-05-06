@@ -22,6 +22,8 @@ library(ggmap)
 library(tidyr)
 #install.packages("stats4")
 library(stats4)
+#install.packages(gridExtra)
+library(gridExtra)
 
 #-------------------------------------------------------------
 # *******************CLEAN & BUILD DATASET********************
@@ -263,8 +265,8 @@ pvalue <- (sum(diff >= Obs)+1)/(N+1); pvalue
 # with LOWER executive pay. It would make sense that if a lot of the people in a town fall under
 # the poverty line, which is calculated at a national level, that cost of living in the area
 # (rent, food, gas, etc) would be lower for everyone in the town. In addition, job opportunities
-#are probably scarcer so wages are lower. We were surprised to find that executives in 
-#high poverty areas actually receive statistically significantly higher total compensation.
+# are probably scarcer so wages are lower. We were surprised to find that executives in 
+# high poverty areas actually receive statistically significantly higher total compensation.
 
 # comparison with classical methods (req'd analysis #4)
 t.test(hcv$Total.Compensation~hcv$poverty_area)
@@ -272,9 +274,6 @@ t.test(hcv$Total.Compensation~hcv$poverty_area)
 # pvalue; however, the permutation test returns a slightly higher p-value than the t.test;
 # the permutation test is a better method at demonstrating the significant relationship
 # between the two means
-
-summary(lm(Total.Compensation ~ poverty_area, data = hcv))
-#LIZ: could this be the comparison with classical?
 
 
 
@@ -294,24 +293,25 @@ for (i in 1:N) {
   diffs[i] <- mean(hcv$receive_bonus[idx], na.rm = TRUE) - mean(hcv$receive_bonus[-idx], na.rm = TRUE) 
 }
 mean(diffs)
-hist(diffs)
+hist(diffs, xlim=(c(-.10,.15)))
 abline(v=obs_diff, col = "red") 
-# also WTF, the line isn't adding to the histogram!
-#LIZ: this is because the observed is too high (lol). .107 whereas the histogram only goes to 0.05. (run the code below)
-hist(diffs, xlim=(c(0,.15)))
-abline(v=obs_diff, col = "red") 
-
+# the line doesn't even fall on the histogram! significant difference
 pvalue_bonus <- (sum(diffs >= obs_diff)+1)/(N+1); pvalue_bonus
-#micah - can you check what I did here? p-value is significant, but it seems too low to be true...
-#liz: what makes you think it's too low? because it's 0? i think it looks great. as you can see 
-#with the code above, this value is extremely unlikely to see by pure chance
+# p-value is virtually 0; There is < 0.1% chance of this difference arising by chance.
+# Southern executives are more likely to receive bonuses than the executives in the rest of the
+# country.
 
 #------------------------------------------------------------
 #      ggplot with linear regression (#11 and #14)
 #      appropriate use of correlation (#16)
 #------------------------------------------------------------
 
+# plot and linear regression of Total Compensation as a function of percentage of households with 
+# the race of the head of household a minority (Black, Native American, or Asian or Pacific 
+# Islander, or the ethnicity is Hispanic)
 summary(lm(Total.Compensation ~ pct_minority, data = hcv))
+cor(hcv$Total.Compensation, hcv$pct_minority, use = "complete.obs")
+# positive correlation between Total comp and % racial minority
 
 ggplot(hcv, aes(x=pct_minority, y=Total.Compensation, color=pct_minority)) + 
    scale_x_continuous(name="Percent of Racial Minority Clients") + geom_point()+
@@ -320,13 +320,13 @@ ggplot(hcv, aes(x=pct_minority, y=Total.Compensation, color=pct_minority)) +
   geom_smooth(method = 'lm',color='black') + theme_bw() + 
   theme(plot.title = element_text(hjust = 0.5))+scale_color_gradientn(colours = rainbow(5))
 
-#Unexpected thing #2-- for each additonal percentage point minority in the HCV Program,
+# Unexpected thing #2-- for each additonal percentage point minority in the HCV Program,
 # executive compensation increases by $414, and it's statistically significant! We expected
-#these things to be unrelated
+# these things to be unrelated.
 
 
 # Another relationship demonstrated with ggplot, correlation, and linear regression
-# Total comp by tenant income
+# Total compensation of PHA exec as a function of tenant income
 cor(hcv$Total.Compensation, hcv$hh_income, use = "complete.obs")
 # positive correlation between Total comp and tenant income
 # with increasing average tenant household income, the largest total compensation observed
@@ -334,7 +334,7 @@ cor(hcv$Total.Compensation, hcv$hh_income, use = "complete.obs")
 summary(lm(Total.Compensation ~ hh_income, data = hcv))
 # only 6% of the variability in Total Compensation can be explained by the income of the 
 # PHA tenants. However, the relationship between Total Comp and tenant income is significant
-# (p-value virtually = 0). There are other variables that likely contribute to the 
+# (p-value < 0.1%). There are other variables that likely contribute to the 
 # variability in Total Comp. 
 
 ggplot(hcv, aes(x=hh_income, y=Total.Compensation), 
@@ -348,16 +348,15 @@ ggplot(hcv, aes(x=hh_income, y=Total.Compensation),
 
 # as we can see in the plot, the Island region is skewed to the left - could it 
 # be affecting the fit of the model?
-
+# data wihout Island outliers
+hcv_mainland <- filter(hcv, hcv$region != "Island")
 cor(hcv_mainland$Total.Compensation, hcv_mainland$hh_income, use = "complete.obs")
 # positive correlation (as we saw above) and is basically the same correlation seen
 # with all regions included
 summary(lm(hh_income ~ Total.Compensation, data = hcv_mainland))
-# very slightly higher R-squared value (0.067 vs 0.064), so virtually no change in the fit
+# just slightly higher R-squared value (0.067 vs 0.064), so virtually no change in the fit
 # of the linear model
 
-# plot wihout Island outliers
-hcv_mainland <- filter(hcv, hcv$region != "Island")
 ggplot(hcv_mainland, aes(x=hh_income, y=Total.Compensation), 
        group=region) + 
   geom_point(aes(shape=region, color=region)) + 
@@ -394,9 +393,9 @@ hist(hcv_no_out$hh_income, col = rgb(0.1,0.7,0.2,0.5), probability = TRUE, break
 # close to the mean, and much less likely (probability = 0%) to see values above 20k or
 # below 5k
 
-# now remove the outliers of total comp from this dataset based off of original dataset
+# now remove the outliers of total comp from this dataset
 hcv_no_out <- hcv_no_out[!hcv_no_out$Total.Compensation %in% 
-                           boxplot.stats(hcv$Total.Compensation)$out,]
+                           boxplot.stats(hcv_no_out$Total.Compensation)$out,]
 
 ggplot(hcv_no_out, aes(x=hh_income, y=Total.Compensation), 
        group=region) + 
@@ -412,7 +411,8 @@ summary(lm(hh_income ~ Total.Compensation, data = hcv))
 #------------------------------------------------------------------
 #      Calculation and display of logistic regression curve (#15)
 #------------------------------------------------------------------
-
+# MICAH: do we want to keep this plot at all and just remove the logistic regression?
+# or should we remove this entirely?
 ggplot(hcv, aes(x=num_hh, y=Total.Compensation), group=region) + 
   geom_point(aes(shape=region, color=region)) + 
   scale_x_continuous(name="Number of Client Households",labels=scales::comma,limits=c(0,1000)) +
@@ -484,15 +484,17 @@ curve(exp(results@coef[1]+results@coef[2]*x)/
 # Journal, 5(1), 144-161. URL
 # http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf
 
-# when retrieving the map below from Google, you may get an error, saying you're "OVER_QUERY_LIMIT"
-# if this occurs, please try again a few more times, it will eventually work
-# the only solution around this is to get an API key from Google, but I'm not ready for that level
-# of commitment for a one-off term project
+# the below will create two difference maps, visualizing rent burden across the United States
+
+# when retrieving the first map (below) from Google, you may get an error, saying you're 
+# "OVER_QUERY_LIMIT" (Google blocks the query if you've reached your quota). If this occurs, 
+# please try again a few more times, it will eventually work.
+# The only solution around this is to get an API key from Google, but I'm not ready for that level
+# of commitment for a one-off term project.
 usa.map <- get_map(location = 'united states', zoom=4, maptype = "terrain",
                    source = 'google')
 
 # pull out columns we're interested in
-# MICAH - can choose a different variable for this, if you want!
 hcv_map <- select(hcv, longitude, latitude, rent_burden)
 cont_coords <- function(x) (as.numeric(as.character(x)))
 hcv_map[,1:2] <- sapply(hcv_map[,1:2], cont_coords)
@@ -511,6 +513,7 @@ plot_all <- ggmap(usa.map) + geom_point(aes(x=longitude, y=latitude, colour=rent
         axis.title.x=element_blank(),
         plot.title = element_text(hjust = 0.5))
 plot_all
+# easy to visualize data density and which specific areas that have low vs high rent burden
 
 #different type of map, representing mean rent burden across the continental US
 hcv_state <- hcv %>% group_by(states) %>% summarise(mean_rb = mean(rent_burden, na.rm = TRUE))
@@ -534,10 +537,9 @@ plot_mean <- ggplot(hcv_state, aes(fill = mean_rb)) +
         axis.title.x=element_blank(),
         plot.title = element_text(hjust = 0.5))
 plot_mean
+# this display allows you to see which states in the US have the highest or lower mean rent
+# burden
 
-# MICAH: could even show them together, if we want to; 
-# at this point, i'm just playing around with things
-install.packages(gridExtra)
-library(gridExtra)
+# if you want to see the two maps together, please do the following:
 grid.arrange(plot_all, plot_mean, nrow=2)
 
