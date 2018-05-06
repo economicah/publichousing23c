@@ -336,8 +336,19 @@ ggplot(hcv, aes(x=hh_income, y=Total.Compensation), group=region) +
 # (total comp by tenant income), we'll remove the outliers from the data
 # first remove outliers from tenant income (hh_income)
 hcv_no_out <- hcv[!hcv$hh_income %in% boxplot.stats(hcv$hh_income)$out,]
-# now remove any remaining outliers of total comp (which existed in the main
-# dataset) from the data set we just created
+# look at difference on histogram
+hist(hcv$hh_income, prob = TRUE, ylim = c(0, .00025), 
+     col = rgb(0.2, 0.4, 0.8, 0.3), main = "Income of Tenants at every 
+     Public Housing Authority", xlab = "Annual Income (in dollars)")
+hist(hcv_no_out$hh_income, col = rgb(0.1,0.7,0.2,0.5), prob =TRUE, add = TRUE)
+# now remove the outliers of total comp from this dataset
+# Micah - help wanted! is it appropriate to remove the total comp from this new dataset
+# OR should we base the removal of the outliers off of the total comp outliers in the original
+# dataset (see below for differences)
+# based off of original dataset
+hcv_no_out <- hcv_no_out[!hcv_no_out$Total.Compensation %in% 
+                           boxplot.stats(hcv$Total.Compensation)$out,]
+# based off of new dataset (with hh_income outliers removed)
 hcv_no_out <- hcv_no_out[!hcv_no_out$Total.Compensation %in% 
                      boxplot.stats(hcv_no_out$Total.Compensation)$out,]
 
@@ -350,6 +361,7 @@ ggplot(hcv_no_out, aes(x=hh_income, y=Total.Compensation),
   geom_smooth(method = 'lm') + theme_bw()
 cor(hcv$Total.Compensation, hcv$hh_income, use = "complete.obs")
 summary(lm(hh_income ~ Total.Compensation, data = hcv))
+#Removing the ~300 outliers didn't change the fit of the linear model
 
 #------------------------------------------------------------------
 #      Calculation and display of logistic regression curve, #15)
