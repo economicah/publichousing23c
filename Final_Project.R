@@ -86,16 +86,21 @@ hcv <- left_join(hcv, salaries_max, by = "code")
 #          Create Variables               
 #------------------------------------------------------------
 
-# add number of client households as a new variable
-hcv <- mutate(hcv, num_hh = total_units * (pct_occupied/100))
-#sum(hcv$num_hh, na.rm = TRUE)
+
 
 # the census bureau designates census tracts with a poverty rate >=20% as "poverty areas"
 hcv <- mutate(hcv, poverty_area = tpoverty >=20)
 #head(hcv$poverty_area,hcv$tpoverty)
 
+# add number of client households as a new variable
+hcv <- mutate(hcv, num_hh = total_units * (pct_occupied/100))
+#sum(hcv$num_hh, na.rm = TRUE)
+
 # add number of female-headed households as a new variable
 hcv <- mutate(hcv, num_fem = total_units * (pct_occupied/100) * (pct_female_head/100))
+
+# add number of female-headed (with children) households as a new variable
+hcv <- mutate(hcv, num_mother = total_units * (pct_occupied/100) * (pct_female_head_child/100))
 
 # add number of male-headed households as a new variable
 hcv <- mutate(hcv, num_male = total_units * (pct_occupied/100) * (1-(pct_female_head/100)))
@@ -123,12 +128,12 @@ hcv <- mutate(hcv, rent_burden  = total_rent/income_monthly)
 
 # create data frame with total number of female heads of households and male head of households
 # by census region
-hcv_collapse <- summaryBy(num_male+num_fem~region,data=hcv,FUN=sum,na.rm=TRUE)
+hcv_collapse <- summaryBy(num_male+num_fem+num_mother~region,data=hcv,FUN=sum,na.rm=TRUE)
+hcv_collapse <- mutate(hcv_collapse, num_nonmother  = num_fem.sum-num_mother.sum)
+hcv_collapse <- select(hcv_collapse, region,num_male.sum, num_nonmother,num_mother.sum)
+
 # melt that data frame
 hcv_collapse_melt <-melt(hcv_collapse,id.var="region")
-
-#hcv_collapse_melt$variable <- factor(hcv_collapse_melt$variable, levels = c("num_fem.sum"
-#   ,"num_male.sum"))
 
 # create stacked barplot of heads of households by region
 ggplot(data = hcv_collapse_melt, aes(x = reorder(region, -value), y = value, 
@@ -136,7 +141,8 @@ ggplot(data = hcv_collapse_melt, aes(x = reorder(region, -value), y = value,
   ggtitle("Households Receiving Subsidized Housing\n by Region") +
   scale_y_continuous(name="Count",labels=scales::comma) +
   theme(legend.position="bottom",legend.direction = "horizontal", legend.title=element_blank()) +
-  scale_fill_manual(values=c("steelblue1", "lightpink"),labels=c("Male-Headed", "Female-Headed")) +
+  scale_fill_manual(values=c(f98866, ff420e,80bd9e),
+                    labels=c("Headed\n by a Man", "Headed by a\n Woman, No Children","Headed by a\n Woman with Children")) +
   theme(plot.title = element_text(hjust = 0.5))
 
 
