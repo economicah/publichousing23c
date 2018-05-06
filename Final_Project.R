@@ -17,6 +17,8 @@ library(dplyr)
 library(noncensus)
 #install.packages("ggmap")
 library(ggmap)
+#install.packages("tidyr")
+library(tidyr)
 
 
 #-------------------------------------------------------------
@@ -444,3 +446,25 @@ ggmap(usa.map) + geom_point(aes(x=longitude, y=latitude, colour=rent_burden),
 
 attr(usa.map, "bb") #get correct limits of US map to add into plot
 
+#different type of map, representing mean rent burden across the continental US
+hcv_state <- hcv %>% group_by(states) %>% summarise(mean_rb = mean(rent_burden, na.rm = TRUE))
+hcv_state <- hcv_state %>% separate(states, c("abbrev", "state_name"), " ", 
+                                    remove = TRUE, fill = "right", extra = "merge")
+hcv_state <- mutate(hcv_state, state = tolower(state_name))
+hcv_state <- hcv_state[,3:4]
+
+map <- map_data("state")
+ggplot(hcv_state, aes(fill = mean_rb)) + 
+  geom_map(aes(map_id = state), map = map) + 
+  expand_limits(x = map$long, y = map$lat) +
+  scale_fill_gradient("Mean Rent\nBurden", low='grey',
+                      high='darkblue') + 
+  ggtitle("Mean Rent Burden across the United States") +
+  coord_map(projection="mercator",xlim=c(-125, -66), ylim=c(25, 50)) +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        rect = element_blank(),
+        axis.title.y=element_blank(),
+        axis.title.x=element_blank(),
+        plot.title = element_text(hjust = 0.5))
