@@ -19,13 +19,8 @@ library(noncensus)
 library(ggmap)
 #install.packages("tidyr")
 library(tidyr)
-<<<<<<< HEAD
-library(stats4)
-=======
 #install.packages("stats4")
 library(stats4)
-
->>>>>>> 4f79ce0bf51b82c234fd61e546658207e906969c
 
 #-------------------------------------------------------------
 # *******************CLEAN & BUILD DATASET********************
@@ -248,6 +243,11 @@ head(diff)
 hist(diff)
 abline(v=Obs, col = "red") #far from the center of the distribution
 pvalue <- mean(diff > Obs); pvalue #pval of 0. Significant
+pvalue_ll <- (sum(diff >= Obs)+1)/(N+1); pvalue_ll
+# MICAH: what's the difference between calculating the pvalue the first way vs the 
+# way I just added?
+#LIZ: no idea. where did you get your formula?
+
 
 #Unexpected thing #1: We expected that being located in a high-poverty area would be associated
 # with LOWER executive pay. It would make sense that if a lot of the people in a town fall under
@@ -256,12 +256,9 @@ pvalue <- mean(diff > Obs); pvalue #pval of 0. Significant
 #are probably scarcer so wages are lower. We were surprised to find that executives in 
 #high poverty areas actually receive statistically significantly higher total compensation.
 
-summary(lm(Total.Compensation ~ pct_median, data = hcv))
+summary(lm(Total.Compensation ~ poverty_area, data = hcv))
+#LIZ: could this be the comparison with classical?
 
-pvalue_ll <- (sum(diff >= Obs)+1)/(N+1); pvalue_ll
-# MICAH: what's the difference between calculating the pvalue the first way vs the 
-# way I just added?
-#LIZ: no idea. where did you get your formula?
 
 #Permutation Test #2-- Are southern executives more likely to receive bonuses?
 table(hcv$receive_bonus,hcv$region)
@@ -295,6 +292,19 @@ pvalue_bonus <- (sum(diffs >= obs_diff)+1)/(N+1); pvalue_bonus
 #      ggplot with linear regression (#11 and #14)
 #      appropriate use of correlation (#16)
 #------------------------------------------------------------
+
+summary(lm(Total.Compensation ~ pct_minority, data = hcv))
+
+ggplot(hcv, aes(x=pct_minority, y=Total.Compensation, color=pct_minority)) + 
+   scale_x_continuous(name="Percent of Racial Minority Clients") + geom_point()+
+  scale_y_continuous(name="Largest 'Total Compensation' @ PHA",labels=scales::comma) +
+  ggtitle("Race and PHA Executive Compensation") +
+  geom_smooth(method = 'lm',color='black') + theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5))+scale_color_gradientn(colours = rainbow(5))
+
+#Unexpected thing #2-- for each additonal percentage point minority in the HCV Program,
+# executive compensation increases by $414, and it's statistically significant! We expected
+#these things to be unrelated
 
 cor(hcv$Total.Compensation, hcv$hh_income, use = "complete.obs")
 # positive correlation between Total comp and tenant income
@@ -444,24 +454,6 @@ results@coef
 curve(exp(results@coef[1]+results@coef[2]*x)/ 
         (1+exp(results@coef[1]+results@coef[2]*x)),col = "blue", add=TRUE)
 # does this look better or worse than the other log reg curve?
-
-#------------------------------------------------------------
-#          Calculate Confidence Interval (#20)                
-#------------------------------------------------------------
-
-# If we use our sample standard deviation S, we create a t statistic.
-# Studentize the data, using S instead of the national sigma.
-ourpct_welfare_major <- mean(hcv_mainland$pct_welfare_major,na.rm =TRUE); ourpct_welfare_major   #surprisingly high
-S <- sd(hcv_mainland$pct_welfare_major,na.rm =TRUE); S
-t = (ourpct_welfare_major-mu)/(S/sqrt(n)); t 
-PValue <- pt(t, df = n-1, lower.tail = FALSE); PValue
-#The p-value is much smaller, because our S is smaller than sigma
-curve(dnorm(x, mu, S/sqrt(n)), from = 560, to = 640)
-abline(v = ourpct_welfare_major, col = "red")     #our mean score looks really good
-
-#For n this large, the t distribution is essentially standard normal
-t = (ourpct_welfare_major-mu)/(sigma/sqrt(n)); t 
-PValue <- pt(t, df = n-1, lower.tail = FALSE); PValue #same as earlier result
 
 #------------------------------------------------------------
 #      Graphical display diff from class scripts (#19)
