@@ -19,7 +19,13 @@ library(noncensus)
 library(ggmap)
 #install.packages("tidyr")
 library(tidyr)
+<<<<<<< HEAD
 library(stats4)
+=======
+#install.packages("stats4")
+library(stats4)
+
+>>>>>>> 4f79ce0bf51b82c234fd61e546658207e906969c
 
 #-------------------------------------------------------------
 # *******************CLEAN & BUILD DATASET********************
@@ -443,8 +449,8 @@ curve(exp(results@coef[1]+results@coef[2]*x)/
 #          Calculate Confidence Interval (#20)                
 #------------------------------------------------------------
 
-#If we use our sample standard deviation S, we create a t statistic.
-#Studentize the data, using S instead of the national sigma.
+# If we use our sample standard deviation S, we create a t statistic.
+# Studentize the data, using S instead of the national sigma.
 ourpct_welfare_major <- mean(hcv_mainland$pct_welfare_major,na.rm =TRUE); ourpct_welfare_major   #surprisingly high
 S <- sd(hcv_mainland$pct_welfare_major,na.rm =TRUE); S
 t = (ourpct_welfare_major-mu)/(S/sqrt(n)); t 
