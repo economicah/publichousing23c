@@ -166,13 +166,10 @@ axis(side=1, at=seq(0,200,10))
 # add exponential distribution function
 a <- 1/mean(hcv$months_waiting, na.rm = TRUE)
 curve(dexp(x, a), add = TRUE)
-N<- length(hcv$code); N
-curve(dchisq(x, N-1, ncp = 0, log = FALSE), add= TRUE)
-# MICAH: do you think we need to explain the "significance" of this being an exponential
-# distribution? I'm not sure how to phrase it, but somethin like: 
-# "proportion of HCV programs is exponentially lower with longer waiting periods. this makes
-# sense since people wouldn't have to wait as long for a Housing Choice Voucher if there
-# were more." 
+
+#It makes sense that an exponential curve fits "number of months waiting" very well. 
+#this curve arises when examining the length of time between events in Poisson processes. 
+
 
 #------------------------------------------------------------
 #      Contingency table (Reqd Graphical Displays #4)
@@ -224,21 +221,14 @@ chisq.test(hcv$mw_bin, hcv$poverty_area)
 #---------------------------------------------------------------------
 
 #permutation test #1
-PoorInd <- which(hcv$poverty_area); head(PoorInd) #indices for poverty_areas
+PoorInd <- which(hcv$poverty_area); head(PoorInd) #indices for poverty_areas (defined above
+#as geographic areas where >20% of the population lives below poverty line)
 
-# Total.Compensation
+# Total.Compensation = Compensation of highest paid employee at HCV Program
 tapply(hcv$Total.Compensation, hcv$poverty_area, mean, na.rm=TRUE)
 Total.Compensation <- hcv$Total.Compensation
 Obs <- mean(Total.Compensation[PoorInd],na.rm=TRUE)-mean(Total.Compensation[-PoorInd],na.rm=TRUE); Obs  
 # difference of $6,064--is this significant? 
-
-# Micah - if we want to spin this as our "unexepected" thing, do you think
-# we should show that the difference is 7.5% of the mean for non-poverty area
-# and is 7% of the mean for the poverty area (so it's rather small! and is about 
-# the same proportion of each mean); see below:
-6604/87240.89*100
-6604/94427.60*100
-#liz: where did 6604 come from?
 
 # Run a permutation test by scrambling the poverty_area vector 
 N <-10000; diff <- numeric(N)
@@ -254,6 +244,7 @@ pvalue <- mean(diff > Obs); pvalue #pval of 0. Significant
 pvalue_ll <- (sum(diff >= Obs)+1)/(N+1); pvalue_ll
 # MICAH: what's the difference between calculating the pvalue the first way vs the 
 # way I just added?
+#LIZ: no idea. where did you get your formula?
 chisq.test(hcv$poverty_area, hcv$Total.Compensation)
 # MICAH - is this chisq.test sufficient for our "Comparison of analysis by 
 # classical methods"? Did I set it up appropriately?
