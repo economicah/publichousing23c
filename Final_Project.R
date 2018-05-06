@@ -141,7 +141,7 @@ ggplot(data = hcv_collapse_melt, aes(x = reorder(region, -value), y = value,
   ggtitle("Households Receiving Subsidized Housing\n by Region") +
   scale_y_continuous(name="Count",labels=scales::comma) +
   theme(legend.position="bottom",legend.direction = "horizontal", legend.title=element_blank()) +
-  scale_fill_manual(values=c(f98866, ff420e,80bd9e),
+  scale_fill_manual(values=c("lightsalmon","mediumorchid3", "mediumorchid4"),
                     labels=c("Headed\n by a Man", "Headed by a\n Woman, No Children","Headed by a\n Woman with Children")) +
   theme(plot.title = element_text(hjust = 0.5))
 
