@@ -161,7 +161,7 @@ hist(hcv$months_waiting, breaks = "FD", prob = TRUE,
      ylim = c(0,.04),
      col=rgb(0.2,0.8,0.5,0.5),border=F,
      main="Time Spent Waiting for a Home",
-     xlab="Average Months",ylab="Proportion of HCV Programs",xaxt="n",)
+     xlab="Average Months",ylab="Proportion of HCV Programs",xaxt="n")
 axis(side=1, at=seq(0,200,10))
 # add exponential distribution function
 a <- 1/mean(hcv$months_waiting, na.rm = TRUE)
