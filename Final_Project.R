@@ -350,10 +350,9 @@ hist(hcv$hh_income, ylim = c(0, .00025), probability = TRUE,
      col = rgb(0.2, 0.4, 0.8, 0.3), main = "Income of Tenants at every 
      Public Housing Authority", xlab = "Annual Income (in dollars)", breaks = "FD")
 hist(hcv_no_out$hh_income, col = rgb(0.1,0.7,0.2,0.5), probability = TRUE, breaks = "FD",add = TRUE)
-#we see here that removing the outliers makes it much more likely to observe annual income
-#close to the mean, and much less likely (probability = 0%) to see values above 20k or
-#below 5k
-
+# we see here that removing the outliers makes it much more likely to observe annual income
+# close to the mean, and much less likely (probability = 0%) to see values above 20k or
+# below 5k
 
 # now remove the outliers of total comp from this dataset based off of original dataset
 hcv_no_out <- hcv_no_out[!hcv_no_out$Total.Compensation %in% 
@@ -437,12 +436,7 @@ curve(exp(results@coef[1]+results@coef[2]*x)/
 # does this look better or worse than the other log reg curve?
 
 #------------------------------------------------------------
-#      Graphical display diff from class scripts (#19)
-#------------------------------------------------------------
-
-
-#------------------------------------------------------------
-#          Calculate Confidence Interval                
+#          Calculate Confidence Interval (#20)                
 #------------------------------------------------------------
 
 #If we use our sample standard deviation S, we create a t statistic.
@@ -458,7 +452,11 @@ abline(v = ourpct_welfare_major, col = "red")     #our mean score looks really g
 #For n this large, the t distribution is essentially standard normal
 t = (ourpct_welfare_major-mu)/(sigma/sqrt(n)); t 
 PValue <- pt(t, df = n-1, lower.tail = FALSE); PValue #same as earlier result
-=======
+
+#------------------------------------------------------------
+#      Graphical display diff from class scripts (#19)
+#------------------------------------------------------------
+
 # citation (as requested by library(ggmap))
 # D. Kahle and H. Wickham. ggmap: Spatial Visualization with ggplot2. The R
 # Journal, 5(1), 144-161. URL
