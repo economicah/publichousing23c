@@ -86,8 +86,6 @@ hcv <- left_join(hcv, salaries_max, by = "code")
 #          Create Variables               
 #------------------------------------------------------------
 
-
-
 # the census bureau designates census tracts with a poverty rate >=20% as "poverty areas"
 hcv <- mutate(hcv, poverty_area = tpoverty >=20)
 #head(hcv$poverty_area,hcv$tpoverty)
@@ -178,15 +176,13 @@ hist(hcv$rent_burden, breaks = "FD",
 
 # create histogram of average months waiting
 hist(hcv$months_waiting, breaks = "FD", prob = TRUE,
-     ylim = c(0,.04),
      col=rgb(0.2,0.8,0.5,0.5),border=F,
      main="Time Spent Waiting for a Home",
      xlab="Average Months",ylab="Proportion of HCV Programs",xaxt="n")
 axis(side=1, at=seq(0,200,10))
 # add exponential distribution function
 a <- 1/mean(hcv$months_waiting, na.rm = TRUE)
-curve(dexp(x, a), add = TRUE)
-
+curve(dexp(x,a), from = 0, add = TRUE)
 #It makes sense that an exponential curve fits "number of months waiting" very well. 
 #this curve arises when examining the length of time between events in Poisson processes. 
 
