@@ -278,18 +278,18 @@ pvalue_bonus <- (sum(diffs >= obs_diff)+1)/(N+1); pvalue_bonus
 
 #------------------------------------------------------------
 #      ggplot with linear regression (#11 and #14)
+#      appropriate use of correlation (#16)
 #------------------------------------------------------------
 
 # total comp by tenant income
-
-# with Island outliers
 ggplot(hcv, aes(x=hh_income, y=Total.Compensation), 
        group=region) + 
   geom_point(aes(shape=region, color=region)) + 
   scale_x_continuous(name="Average Tenant Household Income",labels=scales::comma) +
   scale_y_continuous(name="Largest 'Total Compensation' @ PHA",labels=scales::comma) +
   ggtitle("Relationship between Tenant Income and\n PHA Executive Compensation") +
-  geom_smooth(method = 'lm') + theme_bw()
+  geom_smooth(method = 'lm') + theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5))
 
 cor(hcv$Total.Compensation, hcv$hh_income, use = "complete.obs")
 # positive correlation between Total comp and tenant income
@@ -299,15 +299,6 @@ summary(lm(hh_income ~ Total.Compensation, data = hcv))
 #behave differently than everyone else and may be biasing our results in a way that
 #is not relevant to analysis of the mainland. what do you think? we could even make a
 #point of doing it and explaining it-- does that fit into any of the bonus point categories?
-
-
-# trying to determine how to remove outliers: work in progress!
-hcv_rem_out <- hcv[!hcv$hh_income %in% boxplot(hcv$hh_income)$out,]
-hcv_rem_out <- hcv_rem_out[!hcv_rem_out$Total.Compensation %in% 
-                     boxplot(hcv_rem_out$Total.Compensation)$out,]
-
-
-
 
 # wihout Island outliers
 hcv_mainland <- filter(hcv, hcv$region != "Island")
@@ -330,20 +321,56 @@ ggplot(hcv, aes(x=hh_income, y=Total.Compensation), group=region) +
   ggtitle("Relationship between Tenant Income and\n PHA Executive Compensation, by Region") +
   geom_smooth(method = 'lm') + facet_wrap(~region) + theme_bw()
 
+
+#------------------------------------------------------------
+#      Appropriate use of novel statistics (trimmed mean, #13)
+#------------------------------------------------------------
+
+# remove outliers from data, attempting to get a better fit linear model
+# first remove outliers from tenant income (hh_income)
+hcv_no_out <- hcv[!hcv$hh_income %in% boxplot.stats(hcv$hh_income)$out,]
+# now remove any remaining outliers of total comp from the primary data set (not from 
+# the data set we just created; I think that's too much trimming)
+hcv_no_out <- hcv_no_out[!hcv_no_out$Total.Compensation %in% 
+                     boxplot.stats(hcv$Total.Compensation)$out,]
+
+ggplot(hcv_no_out, aes(x=hh_income, y=Total.Compensation), 
+       group=region) + 
+  geom_point(aes(shape=region, color=region)) + 
+  scale_x_continuous(name="Average Tenant Household Income",labels=scales::comma) +
+  scale_y_continuous(name="Largest 'Total Compensation' @ PHA",labels=scales::comma) +
+  ggtitle("Relationship between Tenant Income \nand PHA Executive Compensation") +
+  geom_smooth(method = 'lm') + theme_bw()
+cor(hcv$Total.Compensation, hcv$hh_income, use = "complete.obs")
+summary(lm(hh_income ~ Total.Compensation, data = hcv))
+
+#------------------------------------------------------------------
+#      Calculation and display of logistic regression curve, #15)
+#------------------------------------------------------------------
+
 ggplot(hcv, aes(x=num_hh, y=Total.Compensation), group=region) + 
   geom_point(aes(shape=region, color=region)) + 
-  scale_x_continuous(name="Number of Client Households",labels=scales::comma,limits=c(0,50000)) +
+  scale_x_continuous(name="Number of Client Households",labels=scales::comma,limits=c(0,1000)) +
   scale_y_continuous(name="Largest 'Total Compensation' @ PHA",labels=scales::comma) +
   ggtitle("Relationship between Tenant Caseload and\n PHA Executive Compensation") +
   geom_smooth(method = 'lm') + theme_bw()
-#LIZ: this is interesting. play with the x-axis limit. most are clumped <1,000 and it's relatively flat
-#but then there's a really strong, positive relationship once the number of clients 
-#gets above that, all the way till 40,000 or so. could this be a candidate for logistic regression?
-#Micah - whoa! that's incredible; it would be worth a shot! I'm trying to think of how
-# we'd make one of these a categorical; like <1000 households to >= 1000 households? actually,
-# i think the outcome should be the compensation variable. so <100k to >= 100k?
+# looks relatively flat and potentially linear with the above x-limits
+
+# removing the x-limits seems to show a different story
+ggplot(hcv, aes(x=num_hh, y=Total.Compensation), group=region) + 
+  geom_point(aes(shape=region, color=region)) + 
+  scale_x_continuous(name="Number of Client Households",labels=scales::comma) +
+  scale_y_continuous(name="Largest 'Total Compensation' @ PHA",labels=scales::comma) +
+  ggtitle("Relationship between Tenant Caseload and\n PHA Executive Compensation") +
+  geom_smooth(method = 'lm') + theme_bw()
+
+# may be a good candidate for logistic regression
+
+
+#MICAH: I made the outcome total.comp - thoughts on the below?
 
 # attempt at logistic regression
+# create binary variable for Total.Comp
 hcv <- mutate(hcv, total_comp_bin = Total.Compensation >= 150000)
 #plot total.comp bins as a function of number of households
 plot(hcv$num_hh, hcv$total_comp_bin) 
@@ -361,7 +388,7 @@ results <- mle(MLL, start = list(alpha = 0, beta = 0))
 results@coef
 curve(exp(results@coef[1]+results@coef[2]*x)/ 
          (1+exp(results@coef[1]+results@coef[2]*x)),col = "blue", add=TRUE)
-# Micah - I don't think this looks that great - what are your thoughts?
+# Micah - I don't know how great this looks - what are your thoughts?
 # I tried with bins of >= 100k and >= 200k, and those were worse
 # any other indicators you'd want to try?
 
