@@ -1,0 +1,78 @@
+---
+title: "Term project"
+author: "Micah Villarreal and Liz Lawler"
+date: "5/6/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include = FALSE}
+#install.packages("reshape2")
+library(reshape2)
+#install.packages("doBy")
+library(doBy)
+#install.packages("ggplot2")
+library(ggplot2)
+#install.packages("dplyr")
+library(dplyr)
+#install.packages("noncensus")
+library(noncensus)
+#install.packages("ggmap")
+library(ggmap)
+#install.packages("tidyr")
+library(tidyr)
+#install.packages("stats4")
+library(stats4)
+
+pha <- read.csv("PHA_2014.csv"); head(pha) 
+pha[pha == -1] <- NA
+pha[pha == -4] <- NA
+pha[pha == -5] <- NA
+hcv <- filter(pha, pha$program == 3)
+data(states)
+states_fin <- states[, c(1, 3, 4)]
+hcv <- left_join(hcv, states_fin, by = "state")
+hcv$region <- as.character(hcv$region)
+hcv$region[is.na(hcv$region)] <- "Island"
+hcv$region <- as.factor(hcv$region)
+table(hcv$region)
+salaries <- read.csv("2014EXEC_COMP.csv"); head(salaries)
+strip_dol <- function(x) as.numeric((gsub("\\,", "", gsub("\\$", "", x))))
+colnames(salaries)
+salaries[,4:10] <- sapply(salaries[,4:10], strip_dol)
+salaries_max <- salaries %>% group_by(PHA.Code) %>% top_n(1, Total.Compensation) %>% 
+  distinct(salaries, PHA.Code, Total.Compensation, .keep_all = TRUE)
+salaries_max$Total.Compensation[salaries_max$Total.Compensation == 0] <- NA 
+salaries_max <- mutate(salaries_max, receive_bonus = Bonus > 0)
+salaries_max$receive_bonus[is.na(salaries_max$Total.Compensation)] <- NA
+salaries_max <- select(salaries_max, Total.Compensation, code = PHA.Code, receive_bonus)
+hcv <- left_join(hcv, salaries_max, by = "code")
+hcv <- mutate(hcv, num_hh = total_units * (pct_occupied/100))
+hcv <- mutate(hcv, poverty_area = tpoverty >=20)
+hcv <- mutate(hcv, num_fem = total_units * (pct_occupied/100) * (pct_female_head/100))
+hcv <- mutate(hcv, num_male = total_units * (pct_occupied/100) * (1-(pct_female_head/100)))
+hcv <- mutate(hcv, total_rent  = rent_per_month + spending_per_month)
+hcv <- mutate(hcv, income_monthly  = hh_income/12)
+hcv <- mutate(hcv, rent_burden  = total_rent/income_monthly)
+```
+
+## Introduction
+< insert brief intro about what we did (from our one-page handout) >
+
+
+```{r echo=FALSE}
+hcv_collapse <- summaryBy(num_male+num_fem~region,data=hcv,FUN=sum,na.rm=TRUE)
+hcv_collapse_melt <-melt(hcv_collapse,id.var="region")
+
+ggplot(data = hcv_collapse_melt, aes(x = reorder(region, -value), y = value, 
+  fill = factor(variable))) + geom_bar(stat="identity") + theme_bw() + labs(x="Region")  +
+  ggtitle("Households Receiving Subsidized Housing\n by Region") +
+  scale_y_continuous(name="Count",labels=scales::comma) +
+  theme(legend.position="bottom",legend.direction = "horizontal", legend.title=element_blank()) +
+  scale_fill_manual(values=c("steelblue1", "lightpink"),labels=c("Male-Headed", "Female-Headed")) +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
