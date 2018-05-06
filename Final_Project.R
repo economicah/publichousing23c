@@ -468,7 +468,10 @@ PValue <- pt(t, df = n-1, lower.tail = FALSE); PValue #same as earlier result
 # Journal, 5(1), 144-161. URL
 # http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf
 
-library(ggmap) #for some reason, I had to call this library again for the next step to work
+# when retrieving the map below from Google, you may get an error, saying you're "OVER_QUERY_LIMIT"
+# if this occurs, please try again a few more times, it will eventually work
+# the only solution around this is to get an API key from Google, but I'm not ready for that level
+# of commitment for a one-off term project
 usa.map <- get_map(location = 'united states', zoom=4, maptype = "terrain",
                    source = 'google')
 
