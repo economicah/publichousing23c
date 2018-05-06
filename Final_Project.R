@@ -218,6 +218,7 @@ chisq.test(hcv$mw_bin, hcv$poverty_area)
 #---------------------------------------------------------------------
 #      Permutation Test (Reqd Analysis #1)
 #      Comparison of analysis by classical methods (Reqd Analysis #4)
+#      Permutation test works better than classical methods (#12)
 #---------------------------------------------------------------------
 
 #permutation test #1
@@ -367,7 +368,7 @@ summary(lm(hh_income ~ Total.Compensation, data = hcv))
 #Removing the ~300 outliers didn't change the fit of the linear model or the correlation
 
 #------------------------------------------------------------------
-#      Calculation and display of logistic regression curve, #15)
+#      Calculation and display of logistic regression curve (#15)
 #------------------------------------------------------------------
 
 ggplot(hcv, aes(x=num_hh, y=Total.Compensation), group=region) + 
@@ -474,7 +475,7 @@ attr(usa.map, "bb") #get correct limits of US map to add into plot
 plot_all <- ggmap(usa.map) + geom_point(aes(x=longitude, y=latitude, colour=rent_burden), 
                             data=hcv_map, size = 0.5, na.rm = TRUE)  + 
   scale_color_gradient("Rent\nBurden", low="blue", high="red") + 
-  ggtitle("Rent Burden Across the United States") +
+  ggtitle("Rent Burden across the United States") +
   coord_map(projection="mercator",xlim=c(-124, -66), ylim=c(25, 50)) +
   theme(axis.text.x = element_blank(),
         axis.text.y = element_blank(),
