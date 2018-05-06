@@ -250,7 +250,7 @@ pvalue_ll <- (sum(diff >= Obs)+1)/(N+1); pvalue_ll
 # MICAH: what's the difference between calculating the pvalue the first way vs the 
 # way I just added?
 #LIZ: no idea. where did you get your formula?
-<<<<<<< HEAD
+
 
 
 #Unexpected thing #1: We expected that being located in a high-poverty area would be associated
@@ -262,16 +262,9 @@ pvalue_ll <- (sum(diff >= Obs)+1)/(N+1); pvalue_ll
 
 summary(lm(Total.Compensation ~ poverty_area, data = hcv))
 #LIZ: could this be the comparison with classical?
-
-=======
 # MICAH: got it from all of Paul's scripts! where did you get yours?
-chisq.test(hcv$poverty_area, hcv$Total.Compensation)
-# MICAH - is this chisq.test sufficient for our "Comparison of analysis by 
-# classical methods"? Did I set it up appropriately?
-# ALSO we can use it for "An example where permutation tests or other 
-# computational techniques clearly work better than classical methods #12" because the chi-sq
-# came back with a p-value stating this relationship isn't significant
->>>>>>> 49e82856ccc4aa896e1594cb4620d34536b5b23a
+#Liz: from the XPLoot one!
+
 
 #Permutation Test #2-- Are southern executives more likely to receive bonuses?
 table(hcv$receive_bonus,hcv$region)
