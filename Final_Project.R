@@ -13,12 +13,12 @@ library(doBy)
 library(ggplot2)
 #install.packages("dplyr")
 library(dplyr)
-#install.packages("fiftystater")
-library(fiftystater)
-#install.packages("maps")
-library(maps)
 #install.packages("noncensus")
 library(noncensus)
+#install.packages("ggmap")
+library(ggmap)
+#install.packages("tidyr")
+library(tidyr)
 
 
 #-------------------------------------------------------------
@@ -141,6 +141,8 @@ hist(hcv$Total.Compensation/1000, breaks = "FD",
   #   labels=formatC(axTicks(1), format="d", big.mark=','))
 axis(side=1, at=seq(0,260,10))
 #LIZ: are you ok making this a freq instead of a probability?
+#Micah: yes! totally fine; I think I default to probability so often
+# because we've had to overlay PDFs on the hists
 
 hist(hcv$rent_burden, breaks = "FD", 
      col=rgb(0.8,0.3,0.6,0.5), xlim = c(0.5, 2.5), ylim=c(0,300),
@@ -154,6 +156,7 @@ hist(hcv$rent_burden, breaks = "FD",
 #curve(dnorm(x, mu, sig), add= TRUE)
 #LIZ: i agree with this decision! I made this one a freq also though, rather than prob. 
 # i feel like that's easier to understand if we aren't overlaying a distribution
+#Micah: agree!! thanks for doing that :)
 
 #------------------------------------------------------------
 #      PDF over HISTOGRAM (Reqd Graphical Displays #3)
@@ -173,7 +176,11 @@ hist(hcv$months_waiting, breaks = "FD", prob = TRUE,
 # add exponential distribution function
 a <- 1/mean(hcv$months_waiting, na.rm = TRUE)
 curve(dexp(x, a), add = TRUE)
-
+# MICAH: do you think we need to explain the "significance" of this being an exponential
+# distribution? I'm not sure how to phrase it, but somethin like: 
+# "proportion of HCV programs is exponentially lower with longer waiting periods. this makes
+# sense since people wouldn't have to wait as long for a Housing Choice Voucher if there
+# were more." 
 
 #------------------------------------------------------------
 #      Contingency table (Reqd Graphical Displays #4)
@@ -185,34 +192,33 @@ min(hcv$months_waiting, na.rm = TRUE)
 mean(hcv$months_waiting, na.rm = TRUE)
 
 attach(hcv)
-hcv$mw_bin_2[hcv$months_waiting < 6] <- "0 to < 6 mo."
-hcv$mw_bin_2[hcv$months_waiting >= 6  & hcv$months_waiting < 12] <- "6 to < 12 mo."
-hcv$mw_bin_2[hcv$months_waiting >= 12  & hcv$months_waiting < 18] <- "12 to < 18 mo."
-hcv$mw_bin_2[hcv$months_waiting >= 18  & hcv$months_waiting < 24] <- "18 to < 24 mo."
-hcv$mw_bin_2[hcv$months_waiting >= 24  & hcv$months_waiting < 30] <- "24 to < 3 mo."
-hcv$mw_bin_2[hcv$months_waiting >= 30  & hcv$months_waiting < 36] <- "30 to < 36 mo."
-hcv$mw_bin_2[hcv$months_waiting >= 36] <- "36+ mo."
+hcv$mw_bin[hcv$months_waiting < 6] <- "0 to < 6 mo."
+hcv$mw_bin[hcv$months_waiting >= 6  & hcv$months_waiting < 12] <- "6 to < 12 mo."
+hcv$mw_bin[hcv$months_waiting >= 12  & hcv$months_waiting < 18] <- "12 to < 18 mo."
+hcv$mw_bin[hcv$months_waiting >= 18  & hcv$months_waiting < 24] <- "18 to < 24 mo."
+hcv$mw_bin[hcv$months_waiting >= 24  & hcv$months_waiting < 30] <- "24 to < 3 mo."
+hcv$mw_bin[hcv$months_waiting >= 30  & hcv$months_waiting < 36] <- "30 to < 36 mo."
+hcv$mw_bin[hcv$months_waiting >= 36] <- "36+ mo."
 detach(hcv)
-table(hcv$mw_bin_2)
+table(hcv$mw_bin)
 # re-order levels so they're chronological categories
-hcv$mw_bin_2 <- as.factor(hcv$mw_bin_2)
-levels(hcv$mw_bin_2)
-hcv$mw_bin_2 <- factor(hcv$mw_bin_2, levels = 
+hcv$mw_bin <- factor(as.factor(hcv$mw_bin), levels = 
                          c("0 to < 6 mo.", "6 to < 12 mo.", "12 to < 18 mo.",
                            "18 to < 24 mo.", "24 to < 3 mo.", "30 to < 36 mo.",
                            "36+ mo."))
+table(hcv$mw_bin)
 # contingency table of months waiting crossed with poverty areas
-pov_mo_tbl <- table(hcv$mw_bin_2, hcv$poverty_area); pov_mo_tbl
+pov_mo_tbl <- table(hcv$mw_bin, hcv$poverty_area); pov_mo_tbl
 # Compare with the table that would be expected if the factors were independent
 Expected <- outer(rowSums(pov_mo_tbl), colSums(pov_mo_tbl))/sum(pov_mo_tbl); Expected
 # Check if the difference between expected and observed is significant
-chisq.test(hcv$mw_bin_2, hcv$poverty_area)
+chisq.test(hcv$mw_bin, hcv$poverty_area)
 
 # There is about a 1% chance that the observed contingency table arose by chance
 # Logically this makes sense. Much fewer HCV programs located in poorer
 # places (poverty_area = TRUE) experience short wait times (0-6 months)
 # than we would expect, but many more experience wait times in every other
-#bucket than we would expect if wait time was random. Many more HCV 
+# bucket than we would expect if wait time was random. Many more HCV 
 # programs than we would expect in non-poor areas experience short wait times, but
 # many fewer experience wait times in every other bucket
 
@@ -220,9 +226,10 @@ chisq.test(hcv$mw_bin_2, hcv$poverty_area)
 # *************************Analysis***************************
 #-------------------------------------------------------------
 
-#------------------------------------------------------------
+#---------------------------------------------------------------------
 #      Permutation Test (Reqd Analysis #1)
-#------------------------------------------------------------
+#      Comparison of analysis by classical methods (Reqd Analysis #4)
+#---------------------------------------------------------------------
 
 #permutation test #1
 PoorInd <- which(hcv$poverty_area); head(PoorInd) #indices for poverty_areas
@@ -231,7 +238,7 @@ PoorInd <- which(hcv$poverty_area); head(PoorInd) #indices for poverty_areas
 tapply(hcv$Total.Compensation, hcv$poverty_area, mean, na.rm=TRUE)
 Total.Compensation <- hcv$Total.Compensation
 Obs <- mean(Total.Compensation[PoorInd],na.rm=TRUE)-mean(Total.Compensation[-PoorInd],na.rm=TRUE); Obs  
-# difference of $6,064--is this significant?
+# difference of $6,064--is this significant? 
 
 # Micah - if we want to spin this as our "unexepected" thing, do you think
 # we should show that the difference is 7.5% of the mean for non-poverty area
@@ -252,20 +259,26 @@ head(diff)
 hist(diff)
 abline(v=Obs, col = "red") #far from the center of the distribution
 pvalue <- mean(diff > Obs); pvalue #pval of 0. Significant
-ptest
+pvalue_ll <- (sum(diff >= Obs)+1)/(N+1); pvalue_ll
+# MICAH: what's the difference between calculating the pvalue the first way vs the 
+# way I just added?
+chisq.test(hcv$poverty_area, hcv$Total.Compensation)
+# MICAH - is this chisq.test sufficient for our "Comparison of analysis by 
+# classical methods"? Did I set it up appropriately?
+# ALSO we can use it for "An example where permutation tests or other 
+# computational techniques clearly work better than classical methods #12" because the chi-sq
+# came back with a p-value stating this relationship isn't significant
 
+# MICAH: we can get rid of teh next perm test if you want, I feel like yours is more 
+# "significant" and interesting
 #permutation test #2
 table(hcv$receive_bonus,hcv$region)
-#liz they're much more likely to get bonuses in the south looks like
-#micah: I did a permutation test below to see if significant! (and it is)
-
 south_bonus <- hcv %>% filter(region == "South") %>% pull(receive_bonus)
 sb_mean <- mean(south_bonus, na.rm = TRUE)
-
 region_bonus <- hcv %>% filter(region != "South") %>% pull(receive_bonus)
 rb_mean <- mean(region_bonus, na.rm = TRUE)
 
-obs_diff <- sb_mean - rb_mean
+obs_diff <- sb_mean - rb_mean; obs_diff
 
 N <- 10^5
 diffs <- numeric(N)
@@ -274,40 +287,40 @@ for (i in 1:N) {
   diffs[i] <- mean(hcv$receive_bonus[idx], na.rm = TRUE) - mean(hcv$receive_bonus[-idx], na.rm = TRUE) 
 }
 mean(diffs)
+hist(diffs)
+abline(v=obs_diff, col = "red") 
+# also WTF, the line isn't adding to the histogram!
 pvalue_bonus <- (sum(diffs >= obs_diff)+1)/(N+1); pvalue_bonus
 #micah - can you check what I did here? p-value is significant, but it seems too low to be true...
 #liz: what makes you think it's too low? because it's 0? i think it looks great
 
 #------------------------------------------------------------
 #      ggplot with linear regression (#11 and #14)
+#      appropriate use of correlation (#16)
 #------------------------------------------------------------
 
 # total comp by tenant income
-
-# with Island outliers
 ggplot(hcv, aes(x=hh_income, y=Total.Compensation), 
        group=region) + 
   geom_point(aes(shape=region, color=region)) + 
   scale_x_continuous(name="Average Tenant Household Income",labels=scales::comma) +
   scale_y_continuous(name="Largest 'Total Compensation' @ PHA",labels=scales::comma) +
-  ggtitle("Relationship between Tenant Income and\n PHA Executive Compensation") +
-  geom_smooth(method = 'lm') + theme_bw()
+  ggtitle("Relationship between Tenant Income\nand PHA Executive Compensation") +
+  geom_smooth(method = 'lm') + theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5))
 
 cor(hcv$Total.Compensation, hcv$hh_income, use = "complete.obs")
 # positive correlation between Total comp and tenant income
-summary(lm(hh_income ~ Total.Compensation, data = hcv))
-# NEED TO STATE HOW GOOD/BAD THIS FIT IS; POTENTIALLY TALK ABOUT RESIDUALS?
-#LIZ: i think we should consider removing the island people. they clearly
-#behave differently than everyone else and may be biasing our results in a way that
-#is not relevant to analysis of the mainland. what do you think? we could even make a
-#point of doing it and explaining it-- does that fit into any of the bonus point categories?
+# with increasing average tenant household income, the largest PHA total compensation
+# increases
+summary(lm(Total.Compensation ~ hh_income, data = hcv))
+# only 6% of the variability in Total Compensation can be explained by the income of the 
+# PHA tenants. However, the relationship between Total Comp and tenant income is significant
+# (p-value virtually = 0). There are other variables that likely contribute to the 
+# variability in Total Comp. 
 
-
-# trying to determine how to remove outliers: work in progress!
-ggplot(hcv, aes(x=hh_income, y=Total.Compensation, group = region)) + 
-  geom_boxplot() + facet_wrap(~ region)
-
-
+# as we can see in the plot, the Island region is skewed to the left - could it 
+# be affecting the fit of the model?
 # wihout Island outliers
 hcv_mainland <- filter(hcv, hcv$region != "Island")
 ggplot(hcv_mainland, aes(x=hh_income, y=Total.Compensation), 
@@ -315,19 +328,64 @@ ggplot(hcv_mainland, aes(x=hh_income, y=Total.Compensation),
   geom_point(aes(shape=region, color=region)) + 
   scale_x_continuous(name="Average Tenant Household Income",labels=scales::comma) +
   scale_y_continuous(name="Largest 'Total Compensation' @ PHA",labels=scales::comma) +
-  ggtitle("Relationship between Tenant Income and\n PHA Executive Compensation") +
-  stat_smooth(method = 'lm') + theme_bw()
+  ggtitle("Relationship between Tenant Income\nand PHA Executive Compensation") +
+  stat_smooth(method = 'lm') + theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5))
 
 cor(hcv_mainland$Total.Compensation, hcv_mainland$hh_income, use = "complete.obs")
-# positive correlation between Total comp and tenant income
+# positive correlation (as we saw above) and is basically the same correlation seen
+# with all regions included
 summary(lm(hh_income ~ Total.Compensation, data = hcv_mainland))
+# very slightly higher R-squared value (0.067 vs 0.064), so virtually no change in the fit
+# of the linear model
 
+# to see the trends in the regions separately (out of interest):
 ggplot(hcv, aes(x=hh_income, y=Total.Compensation), group=region) + 
   geom_point(aes(shape=region, color=region, alpha = 0.3)) + 
   scale_x_continuous(name="Average Tenant Household Income",labels=scales::comma) +
   scale_y_continuous(name="Largest 'Total Compensation' @ PHA",labels=scales::comma) +
-  ggtitle("Relationship between Tenant Income and\n PHA Executive Compensation, by Region") +
-  geom_smooth(method = 'lm') + facet_wrap(~region) + theme_bw()
+  ggtitle("Relationship between Tenant Income\nand PHA Executive Compensation, by Region") +
+  geom_smooth(method = 'lm') + facet_wrap(~region) + theme_bw() + scale_alpha(guide = 'none')
+
+
+#------------------------------------------------------------
+#      Appropriate use of novel statistics (trimmed mean, #13)
+#------------------------------------------------------------
+
+# in an attempt to get a better fit of a linear model for the previously presented data
+# (total comp by tenant income), we'll remove the outliers from the data
+# first remove outliers from tenant income (hh_income)
+hcv_no_out <- hcv[!hcv$hh_income %in% boxplot.stats(hcv$hh_income)$out,]
+# look at difference on histogram
+hist(hcv$hh_income, prob = TRUE, ylim = c(0, .00025), 
+     col = rgb(0.2, 0.4, 0.8, 0.3), main = "Income of Tenants at every 
+     Public Housing Authority", xlab = "Annual Income (in dollars)")
+hist(hcv_no_out$hh_income, col = rgb(0.1,0.7,0.2,0.5), prob =TRUE, add = TRUE)
+# now remove the outliers of total comp from this dataset
+# MICAH - help wanted! is it appropriate to remove the total comp from this new dataset
+# OR should we base the removal of the outliers off of the total comp outliers in the original
+# dataset (see below for differences)
+# based off of original dataset
+hcv_no_out <- hcv_no_out[!hcv_no_out$Total.Compensation %in% 
+                           boxplot.stats(hcv$Total.Compensation)$out,]
+# based off of new dataset (with hh_income outliers removed)
+hcv_no_out <- hcv_no_out[!hcv_no_out$Total.Compensation %in% 
+                     boxplot.stats(hcv_no_out$Total.Compensation)$out,]
+
+ggplot(hcv_no_out, aes(x=hh_income, y=Total.Compensation), 
+       group=region) + 
+  geom_point(aes(shape=region, color=region)) + 
+  scale_x_continuous(name="Average Tenant Household Income",labels=scales::comma) +
+  scale_y_continuous(name="Largest 'Total Compensation' @ PHA",labels=scales::comma) +
+  ggtitle("Relationship between Tenant Income \nand PHA Executive Compensation") +
+  geom_smooth(method = 'lm') + theme_bw()
+cor(hcv$Total.Compensation, hcv$hh_income, use = "complete.obs")
+summary(lm(hh_income ~ Total.Compensation, data = hcv))
+#Removing the ~300 outliers didn't change the fit of the linear model or the correlation
+
+#------------------------------------------------------------------
+#      Calculation and display of logistic regression curve, #15)
+#------------------------------------------------------------------
 
 ggplot(hcv, aes(x=num_hh, y=Total.Compensation), group=region) + 
   geom_point(aes(shape=region, color=region)) + 
@@ -335,10 +393,67 @@ ggplot(hcv, aes(x=num_hh, y=Total.Compensation), group=region) +
   scale_y_continuous(name="Largest 'Total Compensation' @ PHA",labels=scales::comma) +
   ggtitle("Relationship between Tenant Caseload and\n PHA Executive Compensation") +
   geom_smooth(method = 'lm') + theme_bw()
-#LIZ: this is interesting. play with the x-axis limit. most are clumped <1,000 and it's relatively flat
-#but then there's a really strong, positive relationship once the number of clients 
-#gets above that, all the way till 40,000 or so. could this be a candidate for logistic regression?
+# looks relatively flat and potentially linear with the above x-limits
 
+# removing the x-limits seems to show a different story
+ggplot(hcv, aes(x=num_hh, y=Total.Compensation), group=region) + 
+  geom_point(aes(shape=region, color=region)) + 
+  scale_x_continuous(name="Number of Client Households",labels=scales::comma) +
+  scale_y_continuous(name="Largest 'Total Compensation' @ PHA",labels=scales::comma) +
+  ggtitle("Relationship between Tenant Caseload and\n PHA Executive Compensation") +
+  geom_smooth(method = 'lm') + theme_bw()
+
+# may be a good candidate for logistic regression
+
+
+#MICAH: I made the outcome total.comp - thoughts on the below?
+
+# attempt at logistic regression
+# create binary variable for Total.Comp
+hcv <- mutate(hcv, total_comp_bin = Total.Compensation >= 150000)
+#plot total.comp bins as a function of number of households
+plot(hcv$num_hh, hcv$total_comp_bin) 
+idx <- which(is.na(hcv$num_hh))
+hcv_logreg <- hcv[-idx,]
+idx <- which(is.na(hcv_logreg$total_comp_bin))
+hcv_logreg <- hcv_logreg[-idx,]
+num_house <- hcv_logreg$num_hh
+total_comp_bin <- hcv_logreg$total_comp_bin
+MLL <- function(alpha, beta) {
+  -sum(log(exp(alpha+beta*num_house)/(1+exp(alpha+beta*num_house)))*total_comp_bin
+       + log(1/(1+exp(alpha+beta*num_house)))*(1-total_comp_bin))
+}
+results <- mle(MLL, start = list(alpha = 0, beta = 0))
+results@coef
+curve(exp(results@coef[1]+results@coef[2]*x)/ 
+         (1+exp(results@coef[1]+results@coef[2]*x)),col = "blue", add=TRUE)
+# Micah - I don't know how great this looks - what are your thoughts?
+# I tried with bins of >= 100k and >= 200k, and those were worse
+# any other indicators you'd want to try?
+
+#plot total comp as function of total rent
+plot(hcv$total_rent, hcv$total_comp_bin) 
+idx <- which(is.na(hcv$total_rent))
+hcv_logreg <- hcv[-idx,]
+idx <- which(is.na(hcv_logreg$total_comp_bin))
+hcv_logreg <- hcv_logreg[-idx,]
+rent <- hcv_logreg$total_rent
+tcomp <- hcv_logreg$total_comp_bin
+MLL <- function(alpha, beta) {
+  -sum(log(exp(alpha+beta*rent)/(1+exp(alpha+beta*rent)))*tcomp
+       + log(1/(1+exp(alpha+beta*rent)))*(1-tcomp))
+}
+results <- mle(MLL, start = list(alpha = 0, beta = 0))
+results@coef
+curve(exp(results@coef[1]+results@coef[2]*x)/ 
+        (1+exp(results@coef[1]+results@coef[2]*x)),col = "blue", add=TRUE)
+# does this look better or worse than the other log reg curve?
+
+#------------------------------------------------------------
+#      Graphical display diff from class scripts (#19)
+#------------------------------------------------------------
+
+<<<<<<< HEAD
 #------------------------------------------------------------
 #          Calculate Confidence Interval                
 #------------------------------------------------------------
@@ -356,3 +471,63 @@ abline(v = ourpct_welfare_major, col = "red")     #our mean score looks really g
 #For n this large, the t distribution is essentially standard normal
 t = (ourpct_welfare_major-mu)/(sigma/sqrt(n)); t 
 PValue <- pt(t, df = n-1, lower.tail = FALSE); PValue #same as earlier result
+=======
+# citation (as requested by library(ggmap))
+# D. Kahle and H. Wickham. ggmap: Spatial Visualization with ggplot2. The R
+# Journal, 5(1), 144-161. URL
+# http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf
+
+library(ggmap) #for some reason, I had to call this library again for the next step to work
+usa.map <- get_map(location = 'united states', zoom=4, maptype = "terrain",
+                   source = 'google')
+
+# pull out columns we're interested in
+# MICAH - can choose a different variable for this, if you want!
+hcv_map <- select(hcv, longitude, latitude, rent_burden)
+cont_coords <- function(x) (as.numeric(as.character(x)))
+hcv_map[,1:2] <- sapply(hcv_map[,1:2], cont_coords)
+
+attr(usa.map, "bb") #get correct limits of US map to add into plot
+plot_all <- ggmap(usa.map) + geom_point(aes(x=longitude, y=latitude, colour=rent_burden), 
+                            data=hcv_map, size = 0.5, na.rm = TRUE)  + 
+  scale_color_gradient("Rent\nBurden", low="blue", high="red") + 
+  ggtitle("Rent Burden Across the United States") +
+  coord_map(projection="mercator",xlim=c(-124, -66), ylim=c(25, 50)) +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        rect = element_blank(),
+        axis.title.y=element_blank(),
+        axis.title.x=element_blank(),
+        plot.title = element_text(hjust = 0.5))
+plot_all
+
+#different type of map, representing mean rent burden across the continental US
+hcv_state <- hcv %>% group_by(states) %>% summarise(mean_rb = mean(rent_burden, na.rm = TRUE))
+hcv_state <- hcv_state %>% separate(states, c("abbrev", "state_name"), " ", 
+                                    remove = TRUE, fill = "right", extra = "merge")
+hcv_state <- mutate(hcv_state, state = tolower(state_name))
+hcv_state <- hcv_state[,3:4]
+
+map <- map_data("state")
+plot_mean <- ggplot(hcv_state, aes(fill = mean_rb)) + 
+  geom_map(aes(map_id = state), map = map) + 
+  expand_limits(x = map$long, y = map$lat) +
+  scale_fill_gradient("Mean Rent\nBurden", low='grey', high='darkblue') + 
+  ggtitle("Mean Rent Burden across the United States") +
+  coord_map(projection="mercator",xlim=c(-125, -66), ylim=c(25, 50)) +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        rect = element_blank(),
+        axis.title.y=element_blank(),
+        axis.title.x=element_blank(),
+        plot.title = element_text(hjust = 0.5))
+plot_mean
+
+# MICAH: could even show them together, if we want to; 
+# at this point, i'm just playing around with things
+install.packages(gridExtra)
+library(gridExtra)
+grid.arrange(plot_all, plot_mean, nrow=2)
+>>>>>>> d2b9ba9a8c7f707819347788922daa1127d0f400
