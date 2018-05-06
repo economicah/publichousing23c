@@ -4,6 +4,7 @@
 #!diagnostics off
 rm(list = ls()) #wipes out your environment
 setwd("~/Documents/Harvard Extension School/Math E-23C/Data/")
+setwd("~/Desktop/Term project") #for Liz! (I keep forgetting to do this)
 
 #install.packages("reshape2")
 library(reshape2)
@@ -128,7 +129,9 @@ ggplot(data = hcv_collapse_melt, aes(x = reorder(region, -value), y = value,
   ggtitle("Households Receiving Subsidized Housing\n by Region") +
   scale_y_continuous(name="Count",labels=scales::comma) +
   theme(legend.position="bottom",legend.direction = "horizontal", legend.title=element_blank()) +
-  scale_fill_manual(values=c("steelblue1", "lightpink"),labels=c("Male-Headed", "Female-Headed"))
+  scale_fill_manual(values=c("steelblue1", "lightpink"),labels=c("Male-Headed", "Female-Headed")) +
+  theme(plot.title = element_text(hjust = 0.5))
+  
 
 
 #------------------------------------------------------------
@@ -248,6 +251,7 @@ pvalue_ll <- (sum(diff >= Obs)+1)/(N+1); pvalue_ll
 # MICAH: what's the difference between calculating the pvalue the first way vs the 
 # way I just added?
 #LIZ: no idea. where did you get your formula?
+# MICAH: got it from all of Paul's scripts! where did you get yours?
 chisq.test(hcv$poverty_area, hcv$Total.Compensation)
 # MICAH - is this chisq.test sufficient for our "Comparison of analysis by 
 # classical methods"? Did I set it up appropriately?
