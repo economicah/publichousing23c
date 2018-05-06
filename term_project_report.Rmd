@@ -62,19 +62,11 @@ hcv <- mutate(hcv, rent_burden  = total_rent/income_monthly)
 ## Introduction
 < insert brief intro about what we did (from our one-page handout) >
 
-You can also embed plots, for example:
 
 ```{r echo=FALSE}
-# create data frame with total number of female heads of households and male head of households
-# by census region
 hcv_collapse <- summaryBy(num_male+num_fem~region,data=hcv,FUN=sum,na.rm=TRUE)
-# melt that data frame
 hcv_collapse_melt <-melt(hcv_collapse,id.var="region")
 
-#hcv_collapse_melt$variable <- factor(hcv_collapse_melt$variable, levels = c("num_fem.sum"
-                                                                         #   ,"num_male.sum"))
-
-# create stacked barplot of heads of households by region
 ggplot(data = hcv_collapse_melt, aes(x = reorder(region, -value), y = value, 
   fill = factor(variable))) + geom_bar(stat="identity") + theme_bw() + labs(x="Region")  +
   ggtitle("Households Receiving Subsidized Housing\n by Region") +
@@ -84,4 +76,3 @@ ggplot(data = hcv_collapse_melt, aes(x = reorder(region, -value), y = value,
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
