@@ -269,18 +269,16 @@ chisq.test(hcv$poverty_area, hcv$Total.Compensation)
 # computational techniques clearly work better than classical methods #12" because the chi-sq
 # came back with a p-value stating this relationship isn't significant
 
+# MICAH: we can get rid of teh next perm test if you want, I feel like yours is more 
+# "significant" and interesting
 #permutation test #2
 table(hcv$receive_bonus,hcv$region)
-#liz they're much more likely to get bonuses in the south looks like
-#micah: I did a permutation test below to see if significant! (and it is)
-
 south_bonus <- hcv %>% filter(region == "South") %>% pull(receive_bonus)
 sb_mean <- mean(south_bonus, na.rm = TRUE)
-
 region_bonus <- hcv %>% filter(region != "South") %>% pull(receive_bonus)
 rb_mean <- mean(region_bonus, na.rm = TRUE)
 
-obs_diff <- sb_mean - rb_mean
+obs_diff <- sb_mean - rb_mean; obs_diff
 
 N <- 10^5
 diffs <- numeric(N)
@@ -289,6 +287,9 @@ for (i in 1:N) {
   diffs[i] <- mean(hcv$receive_bonus[idx], na.rm = TRUE) - mean(hcv$receive_bonus[-idx], na.rm = TRUE) 
 }
 mean(diffs)
+hist(diffs)
+abline(v=obs_diff, col = "red") 
+# also WTF, the line isn't adding to the histogram!
 pvalue_bonus <- (sum(diffs >= obs_diff)+1)/(N+1); pvalue_bonus
 #micah - can you check what I did here? p-value is significant, but it seems too low to be true...
 #liz: what makes you think it's too low? because it's 0? i think it looks great
@@ -310,8 +311,10 @@ ggplot(hcv, aes(x=hh_income, y=Total.Compensation),
 
 cor(hcv$Total.Compensation, hcv$hh_income, use = "complete.obs")
 # positive correlation between Total comp and tenant income
+# with increasing average tenant household income, the largest PHA total compensation
+# increases
 summary(lm(Total.Compensation ~ hh_income, data = hcv))
-# 6% of the variability in Total Compensation can be explained by the income of the 
+# only 6% of the variability in Total Compensation can be explained by the income of the 
 # PHA tenants. However, the relationship between Total Comp and tenant income is significant
 # (p-value virtually = 0). There are other variables that likely contribute to the 
 # variability in Total Comp. 
@@ -336,7 +339,7 @@ summary(lm(hh_income ~ Total.Compensation, data = hcv_mainland))
 # very slightly higher R-squared value (0.067 vs 0.064), so virtually no change in the fit
 # of the linear model
 
-# to see the trends in the regions separately:
+# to see the trends in the regions separately (out of interest):
 ggplot(hcv, aes(x=hh_income, y=Total.Compensation), group=region) + 
   geom_point(aes(shape=region, color=region, alpha = 0.3)) + 
   scale_x_continuous(name="Average Tenant Household Income",labels=scales::comma) +
@@ -359,7 +362,7 @@ hist(hcv$hh_income, prob = TRUE, ylim = c(0, .00025),
      Public Housing Authority", xlab = "Annual Income (in dollars)")
 hist(hcv_no_out$hh_income, col = rgb(0.1,0.7,0.2,0.5), prob =TRUE, add = TRUE)
 # now remove the outliers of total comp from this dataset
-# Micah - help wanted! is it appropriate to remove the total comp from this new dataset
+# MICAH - help wanted! is it appropriate to remove the total comp from this new dataset
 # OR should we base the removal of the outliers off of the total comp outliers in the original
 # dataset (see below for differences)
 # based off of original dataset
