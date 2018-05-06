@@ -287,19 +287,20 @@ ggplot(hcv, aes(x=hh_income, y=Total.Compensation),
   geom_point(aes(shape=region, color=region)) + 
   scale_x_continuous(name="Average Tenant Household Income",labels=scales::comma) +
   scale_y_continuous(name="Largest 'Total Compensation' @ PHA",labels=scales::comma) +
-  ggtitle("Relationship between Tenant Income and\n PHA Executive Compensation") +
+  ggtitle("Relationship between Tenant Income\nand PHA Executive Compensation") +
   geom_smooth(method = 'lm') + theme_bw() + 
   theme(plot.title = element_text(hjust = 0.5))
 
 cor(hcv$Total.Compensation, hcv$hh_income, use = "complete.obs")
 # positive correlation between Total comp and tenant income
-summary(lm(hh_income ~ Total.Compensation, data = hcv))
-# NEED TO STATE HOW GOOD/BAD THIS FIT IS; POTENTIALLY TALK ABOUT RESIDUALS?
-#LIZ: i think we should consider removing the island people. they clearly
-#behave differently than everyone else and may be biasing our results in a way that
-#is not relevant to analysis of the mainland. what do you think? we could even make a
-#point of doing it and explaining it-- does that fit into any of the bonus point categories?
+summary(lm(Total.Compensation ~ hh_income, data = hcv))
+# 6% of the variability in Total Compensation can be explained by the income of the 
+# PHA tenants. However, the relationship between Total Comp and tenant income is significant
+# (p-value virtually = 0). There are other variables that likely contribute to the 
+# variability in Total Comp. 
 
+# as we can see in the plot, the Island region is skewed to the left - could it 
+# be affecting the fit of the model?
 # wihout Island outliers
 hcv_mainland <- filter(hcv, hcv$region != "Island")
 ggplot(hcv_mainland, aes(x=hh_income, y=Total.Compensation), 
@@ -307,32 +308,38 @@ ggplot(hcv_mainland, aes(x=hh_income, y=Total.Compensation),
   geom_point(aes(shape=region, color=region)) + 
   scale_x_continuous(name="Average Tenant Household Income",labels=scales::comma) +
   scale_y_continuous(name="Largest 'Total Compensation' @ PHA",labels=scales::comma) +
-  ggtitle("Relationship between Tenant Income and\n PHA Executive Compensation") +
-  stat_smooth(method = 'lm') + theme_bw()
+  ggtitle("Relationship between Tenant Income\nand PHA Executive Compensation") +
+  stat_smooth(method = 'lm') + theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5))
 
 cor(hcv_mainland$Total.Compensation, hcv_mainland$hh_income, use = "complete.obs")
-# positive correlation between Total comp and tenant income
+# positive correlation (as we saw above) and is basically the same correlation seen
+# with all regions included
 summary(lm(hh_income ~ Total.Compensation, data = hcv_mainland))
+# very slightly higher R-squared value (0.067 vs 0.064), so virtually no change in the fit
+# of the linear model
 
+# to see the trends in the regions separately:
 ggplot(hcv, aes(x=hh_income, y=Total.Compensation), group=region) + 
   geom_point(aes(shape=region, color=region, alpha = 0.3)) + 
   scale_x_continuous(name="Average Tenant Household Income",labels=scales::comma) +
   scale_y_continuous(name="Largest 'Total Compensation' @ PHA",labels=scales::comma) +
-  ggtitle("Relationship between Tenant Income and\n PHA Executive Compensation, by Region") +
-  geom_smooth(method = 'lm') + facet_wrap(~region) + theme_bw()
+  ggtitle("Relationship between Tenant Income\nand PHA Executive Compensation, by Region") +
+  geom_smooth(method = 'lm') + facet_wrap(~region) + theme_bw() + scale_alpha(guide = 'none')
 
 
 #------------------------------------------------------------
 #      Appropriate use of novel statistics (trimmed mean, #13)
 #------------------------------------------------------------
 
-# remove outliers from data, attempting to get a better fit linear model
+# in an attempt to get a better fit of a linear model for the previously presented data
+# (total comp by tenant income), we'll remove the outliers from the data
 # first remove outliers from tenant income (hh_income)
 hcv_no_out <- hcv[!hcv$hh_income %in% boxplot.stats(hcv$hh_income)$out,]
-# now remove any remaining outliers of total comp from the primary data set (not from 
-# the data set we just created; I think that's too much trimming)
+# now remove any remaining outliers of total comp (which existed in the main
+# dataset) from the data set we just created
 hcv_no_out <- hcv_no_out[!hcv_no_out$Total.Compensation %in% 
-                     boxplot.stats(hcv$Total.Compensation)$out,]
+                     boxplot.stats(hcv_no_out$Total.Compensation)$out,]
 
 ggplot(hcv_no_out, aes(x=hh_income, y=Total.Compensation), 
        group=region) + 
