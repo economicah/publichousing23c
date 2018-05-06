@@ -141,6 +141,8 @@ hist(hcv$Total.Compensation/1000, breaks = "FD",
   #   labels=formatC(axTicks(1), format="d", big.mark=','))
 axis(side=1, at=seq(0,260,10))
 #LIZ: are you ok making this a freq instead of a probability?
+#Micah: yes! totally fine; I think I default to probability so often
+# because we've had to overlay PDFs on the hists
 
 hist(hcv$rent_burden, breaks = "FD", 
      col=rgb(0.8,0.3,0.6,0.5), xlim = c(0.5, 2.5), ylim=c(0,300),
@@ -154,6 +156,7 @@ hist(hcv$rent_burden, breaks = "FD",
 #curve(dnorm(x, mu, sig), add= TRUE)
 #LIZ: i agree with this decision! I made this one a freq also though, rather than prob. 
 # i feel like that's easier to understand if we aren't overlaying a distribution
+#Micah: agree!! thanks for doing that :)
 
 #------------------------------------------------------------
 #      PDF over HISTOGRAM (Reqd Graphical Displays #3)
@@ -173,7 +176,11 @@ hist(hcv$months_waiting, breaks = "FD", prob = TRUE,
 # add exponential distribution function
 a <- 1/mean(hcv$months_waiting, na.rm = TRUE)
 curve(dexp(x, a), add = TRUE)
-
+# MICAH: do you think we need to explain the "significance" of this being an exponential
+# distribution? I'm not sure how to phrase it, but somethin like: 
+# "proportion of HCV programs is exponentially lower with longer waiting periods. this makes
+# sense since people wouldn't have to wait as long for a Housing Choice Voucher if there
+# were more." 
 
 #------------------------------------------------------------
 #      Contingency table (Reqd Graphical Displays #4)
@@ -185,34 +192,33 @@ min(hcv$months_waiting, na.rm = TRUE)
 mean(hcv$months_waiting, na.rm = TRUE)
 
 attach(hcv)
-hcv$mw_bin_2[hcv$months_waiting < 6] <- "0 to < 6 mo."
-hcv$mw_bin_2[hcv$months_waiting >= 6  & hcv$months_waiting < 12] <- "6 to < 12 mo."
-hcv$mw_bin_2[hcv$months_waiting >= 12  & hcv$months_waiting < 18] <- "12 to < 18 mo."
-hcv$mw_bin_2[hcv$months_waiting >= 18  & hcv$months_waiting < 24] <- "18 to < 24 mo."
-hcv$mw_bin_2[hcv$months_waiting >= 24  & hcv$months_waiting < 30] <- "24 to < 3 mo."
-hcv$mw_bin_2[hcv$months_waiting >= 30  & hcv$months_waiting < 36] <- "30 to < 36 mo."
-hcv$mw_bin_2[hcv$months_waiting >= 36] <- "36+ mo."
+hcv$mw_bin[hcv$months_waiting < 6] <- "0 to < 6 mo."
+hcv$mw_bin[hcv$months_waiting >= 6  & hcv$months_waiting < 12] <- "6 to < 12 mo."
+hcv$mw_bin[hcv$months_waiting >= 12  & hcv$months_waiting < 18] <- "12 to < 18 mo."
+hcv$mw_bin[hcv$months_waiting >= 18  & hcv$months_waiting < 24] <- "18 to < 24 mo."
+hcv$mw_bin[hcv$months_waiting >= 24  & hcv$months_waiting < 30] <- "24 to < 3 mo."
+hcv$mw_bin[hcv$months_waiting >= 30  & hcv$months_waiting < 36] <- "30 to < 36 mo."
+hcv$mw_bin[hcv$months_waiting >= 36] <- "36+ mo."
 detach(hcv)
-table(hcv$mw_bin_2)
+table(hcv$mw_bin)
 # re-order levels so they're chronological categories
-hcv$mw_bin_2 <- as.factor(hcv$mw_bin_2)
-levels(hcv$mw_bin_2)
-hcv$mw_bin_2 <- factor(hcv$mw_bin_2, levels = 
+hcv$mw_bin <- factor(as.factor(hcv$mw_bin), levels = 
                          c("0 to < 6 mo.", "6 to < 12 mo.", "12 to < 18 mo.",
                            "18 to < 24 mo.", "24 to < 3 mo.", "30 to < 36 mo.",
                            "36+ mo."))
+table(hcv$mw_bin)
 # contingency table of months waiting crossed with poverty areas
-pov_mo_tbl <- table(hcv$mw_bin_2, hcv$poverty_area); pov_mo_tbl
+pov_mo_tbl <- table(hcv$mw_bin, hcv$poverty_area); pov_mo_tbl
 # Compare with the table that would be expected if the factors were independent
 Expected <- outer(rowSums(pov_mo_tbl), colSums(pov_mo_tbl))/sum(pov_mo_tbl); Expected
 # Check if the difference between expected and observed is significant
-chisq.test(hcv$mw_bin_2, hcv$poverty_area)
+chisq.test(hcv$mw_bin, hcv$poverty_area)
 
 # There is about a 1% chance that the observed contingency table arose by chance
 # Logically this makes sense. Much fewer HCV programs located in poorer
 # places (poverty_area = TRUE) experience short wait times (0-6 months)
 # than we would expect, but many more experience wait times in every other
-#bucket than we would expect if wait time was random. Many more HCV 
+# bucket than we would expect if wait time was random. Many more HCV 
 # programs than we would expect in non-poor areas experience short wait times, but
 # many fewer experience wait times in every other bucket
 
@@ -220,9 +226,10 @@ chisq.test(hcv$mw_bin_2, hcv$poverty_area)
 # *************************Analysis***************************
 #-------------------------------------------------------------
 
-#------------------------------------------------------------
+#---------------------------------------------------------------------
 #      Permutation Test (Reqd Analysis #1)
-#------------------------------------------------------------
+#      Comparison of analysis by classical methods (Reqd Analysis #4)
+#---------------------------------------------------------------------
 
 #permutation test #1
 PoorInd <- which(hcv$poverty_area); head(PoorInd) #indices for poverty_areas
@@ -231,7 +238,7 @@ PoorInd <- which(hcv$poverty_area); head(PoorInd) #indices for poverty_areas
 tapply(hcv$Total.Compensation, hcv$poverty_area, mean, na.rm=TRUE)
 Total.Compensation <- hcv$Total.Compensation
 Obs <- mean(Total.Compensation[PoorInd],na.rm=TRUE)-mean(Total.Compensation[-PoorInd],na.rm=TRUE); Obs  
-# difference of $6,064--is this significant?
+# difference of $6,064--is this significant? 
 
 # Micah - if we want to spin this as our "unexepected" thing, do you think
 # we should show that the difference is 7.5% of the mean for non-poverty area
@@ -252,7 +259,15 @@ head(diff)
 hist(diff)
 abline(v=Obs, col = "red") #far from the center of the distribution
 pvalue <- mean(diff > Obs); pvalue #pval of 0. Significant
-ptest
+pvalue_ll <- (sum(diff >= Obs)+1)/(N+1); pvalue_ll
+# MICAH: what's the difference between calculating the pvalue the first way vs the 
+# way I just added?
+chisq.test(hcv$poverty_area, hcv$Total.Compensation)
+# MICAH - is this chisq.test sufficient for our "Comparison of analysis by 
+# classical methods"? Did I set it up appropriately?
+# ALSO we can use it for "An example where permutation tests or other 
+# computational techniques clearly work better than classical methods #12" because the chi-sq
+# came back with a p-value stating this relationship isn't significant
 
 #permutation test #2
 table(hcv$receive_bonus,hcv$region)
