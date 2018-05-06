@@ -4,6 +4,7 @@
 #!diagnostics off
 rm(list = ls()) #wipes out your environment
 setwd("~/Documents/Harvard Extension School/Math E-23C/Data/")
+setwd("~/Desktop/Term project") #for Liz! (I keep forgetting to do this)
 
 #install.packages("reshape2")
 library(reshape2)
@@ -127,7 +128,9 @@ ggplot(data = hcv_collapse_melt, aes(x = reorder(region, -value), y = value,
   ggtitle("Households Receiving Subsidized Housing\n by Region") +
   scale_y_continuous(name="Count",labels=scales::comma) +
   theme(legend.position="bottom",legend.direction = "horizontal", legend.title=element_blank()) +
-  scale_fill_manual(values=c("steelblue1", "lightpink"),labels=c("Male-Headed", "Female-Headed"))
+  scale_fill_manual(values=c("steelblue1", "lightpink"),labels=c("Male-Headed", "Female-Headed")) +
+  theme(plot.title = element_text(hjust = 0.5))
+  
 
 
 #------------------------------------------------------------
@@ -247,6 +250,7 @@ pvalue_ll <- (sum(diff >= Obs)+1)/(N+1); pvalue_ll
 # MICAH: what's the difference between calculating the pvalue the first way vs the 
 # way I just added?
 #LIZ: no idea. where did you get your formula?
+<<<<<<< HEAD
 
 
 #Unexpected thing #1: We expected that being located in a high-poverty area would be associated
@@ -259,6 +263,15 @@ pvalue_ll <- (sum(diff >= Obs)+1)/(N+1); pvalue_ll
 summary(lm(Total.Compensation ~ poverty_area, data = hcv))
 #LIZ: could this be the comparison with classical?
 
+=======
+# MICAH: got it from all of Paul's scripts! where did you get yours?
+chisq.test(hcv$poverty_area, hcv$Total.Compensation)
+# MICAH - is this chisq.test sufficient for our "Comparison of analysis by 
+# classical methods"? Did I set it up appropriately?
+# ALSO we can use it for "An example where permutation tests or other 
+# computational techniques clearly work better than classical methods #12" because the chi-sq
+# came back with a p-value stating this relationship isn't significant
+>>>>>>> 49e82856ccc4aa896e1594cb4620d34536b5b23a
 
 #Permutation Test #2-- Are southern executives more likely to receive bonuses?
 table(hcv$receive_bonus,hcv$region)
@@ -464,7 +477,10 @@ curve(exp(results@coef[1]+results@coef[2]*x)/
 # Journal, 5(1), 144-161. URL
 # http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf
 
-library(ggmap) #for some reason, I had to call this library again for the next step to work
+# when retrieving the map below from Google, you may get an error, saying you're "OVER_QUERY_LIMIT"
+# if this occurs, please try again a few more times, it will eventually work
+# the only solution around this is to get an API key from Google, but I'm not ready for that level
+# of commitment for a one-off term project
 usa.map <- get_map(location = 'united states', zoom=4, maptype = "terrain",
                    source = 'google')
 
