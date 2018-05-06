@@ -19,7 +19,7 @@ library(noncensus)
 library(ggmap)
 #install.packages("tidyr")
 library(tidyr)
-
+library(stats4)
 
 #-------------------------------------------------------------
 # *******************CLEAN & BUILD DATASET********************
@@ -242,16 +242,20 @@ head(diff)
 hist(diff)
 abline(v=Obs, col = "red") #far from the center of the distribution
 pvalue <- mean(diff > Obs); pvalue #pval of 0. Significant
+
+#Unexpected thing #1: We expected that being located in a high-poverty area would be associated
+# with LOWER executive pay. It would make sense that if a lot of the people in a town fall under
+# the poverty line, which is calculated at a national level, that cost of living in the area
+# (rent, food, gas, etc) would be lower for everyone in the town. In addition, job opportunities
+#are probably scarcer so wages are lower. We were surprised to find that executives in 
+#high poverty areas actually receive statistically significantly higher total compensation.
+
+summary(lm(Total.Compensation ~ pct_median, data = hcv))
+
 pvalue_ll <- (sum(diff >= Obs)+1)/(N+1); pvalue_ll
 # MICAH: what's the difference between calculating the pvalue the first way vs the 
 # way I just added?
 #LIZ: no idea. where did you get your formula?
-chisq.test(hcv$poverty_area, hcv$Total.Compensation)
-# MICAH - is this chisq.test sufficient for our "Comparison of analysis by 
-# classical methods"? Did I set it up appropriately?
-# ALSO we can use it for "An example where permutation tests or other 
-# computational techniques clearly work better than classical methods #12" because the chi-sq
-# came back with a p-value stating this relationship isn't significant
 
 #Permutation Test #2-- Are southern executives more likely to receive bonuses?
 table(hcv$receive_bonus,hcv$region)
