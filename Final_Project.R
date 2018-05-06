@@ -123,7 +123,7 @@ hcv_collapse_melt <-melt(hcv_collapse,id.var="region")
 
 ggplot(data = hcv_collapse_melt, aes(x = reorder(region, -value), y = value, 
   fill = factor(variable))) + geom_bar(stat="identity") + theme_bw() + labs(x="Region")  +
-  ggtitle("Households Receiving Subsidized Housing by Region") +
+  ggtitle("Households Receiving Subsidized Housing\n by Region") +
   scale_y_continuous(name="Count",labels=scales::comma) +
   theme(legend.position="bottom",legend.direction = "horizontal", legend.title=element_blank()) +
   scale_fill_manual(values=c("steelblue1", "lightpink"),labels=c("Male-Headed", "Female-Headed"))
@@ -140,23 +140,13 @@ hist(hcv$Total.Compensation/1000, breaks = "FD",
 #axis(side=1, at=axTicks(1), 
   #   labels=formatC(axTicks(1), format="d", big.mark=','))
 axis(side=1, at=seq(0,260,10))
-#LIZ: are you ok making this a freq instead of a probability?
-#Micah: yes! totally fine; I think I default to probability so often
-# because we've had to overlay PDFs on the hists
+
 
 hist(hcv$rent_burden, breaks = "FD", 
      col=rgb(0.8,0.3,0.6,0.5), xlim = c(0.5, 2.5), ylim=c(0,300),
      main = "Average Rent Burden",
-     xlab = "Ratio of Household Monthly Income to Pre-Subsidy Rent", ylab = "Number of HCV Programs",border=F) 
-# we had decided we would plot rent_burden with a PDF on it, but the normal 
-# distribution doesn't seem to fit, which is why I decided to do an exp dist. below
-# commented out curve below, if you want to see:
-#mu <- mean(hcv$rent_burden, na.rm = TRUE)
-#sig <- sd(hcv$rent_burden, na.rm = TRUE)
-#curve(dnorm(x, mu, sig), add= TRUE)
-#LIZ: i agree with this decision! I made this one a freq also though, rather than prob. 
-# i feel like that's easier to understand if we aren't overlaying a distribution
-#Micah: agree!! thanks for doing that :)
+     xlab = "Ratio of Pre-Subsidy Rent to Household Monthly Income", ylab = "Number of HCV Programs",border=F) 
+
 
 #------------------------------------------------------------
 #      PDF over HISTOGRAM (Reqd Graphical Displays #3)
@@ -171,11 +161,13 @@ hist(hcv$months_waiting, breaks = "FD", prob = TRUE,
      ylim = c(0,.04),
      col=rgb(0.2,0.8,0.5,0.5),border=F,
      main="Time Spent Waiting for a Home",
-     xlab="Months",ylab="Proportion of HCV Programs")
-
+     xlab="Average Months",ylab="Proportion of HCV Programs",xaxt="n",)
+axis(side=1, at=seq(0,200,10))
 # add exponential distribution function
 a <- 1/mean(hcv$months_waiting, na.rm = TRUE)
 curve(dexp(x, a), add = TRUE)
+N<- length(hcv$code); N
+curve(dchisq(x, N-1, ncp = 0, log = FALSE), add= TRUE)
 # MICAH: do you think we need to explain the "significance" of this being an exponential
 # distribution? I'm not sure how to phrase it, but somethin like: 
 # "proportion of HCV programs is exponentially lower with longer waiting periods. this makes
@@ -453,7 +445,7 @@ curve(exp(results@coef[1]+results@coef[2]*x)/
 #      Graphical display diff from class scripts (#19)
 #------------------------------------------------------------
 
-<<<<<<< HEAD
+
 #------------------------------------------------------------
 #          Calculate Confidence Interval                
 #------------------------------------------------------------
@@ -530,4 +522,4 @@ plot_mean
 install.packages(gridExtra)
 library(gridExtra)
 grid.arrange(plot_all, plot_mean, nrow=2)
->>>>>>> d2b9ba9a8c7f707819347788922daa1127d0f400
+
