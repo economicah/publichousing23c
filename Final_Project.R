@@ -31,7 +31,7 @@ library(stats4)
 #          Read in Data                 
 #------------------------------------------------------------
 
-#public housing authority data from 2014
+# load public housing authority data from 2014
 pha <- read.csv("PHA_2014.csv"); head(pha) 
 pha[pha == -1] <- NA
 pha[pha == -4] <- NA
@@ -57,11 +57,13 @@ table(hcv$region)
 salaries <- read.csv("2014EXEC_COMP.csv"); head(salaries)
 
 # remove $ and resulting comma (class of salary data is a problem)
+# this contributes to "Professional-looking software engineering (#10)"
 strip_dol <- function(x) as.numeric((gsub("\\,", "", gsub("\\$", "", x))))
 colnames(salaries)
 salaries[,4:10] <- sapply(salaries[,4:10], strip_dol)
 
 # generate dataset of max salary for each PHA
+# this contributes to "Professional-looking software engineering (#10)"
 salaries_max <- salaries %>% group_by(PHA.Code) %>% top_n(1, Total.Compensation) %>% 
   distinct(salaries, PHA.Code, Total.Compensation, .keep_all = TRUE)
 # recode missing compensation data as NA rather than 0
@@ -81,7 +83,6 @@ hcv <- left_join(hcv, salaries_max, by = "code")
 #------------------------------------------------------------
 #          Create Variables               
 #------------------------------------------------------------
-
 
 # add number of client households as a new variable
 hcv <- mutate(hcv, num_hh = total_units * (pct_occupied/100))
