@@ -89,3 +89,12 @@ hist(hcv$Total.Compensation/1000, breaks = "FD",
      xlim = c(0, 260), ylim=c(0,300))
 axis(side=1, at=seq(0,260,10))
 ```
+### Average Rent Burden of Public Housing Authority Tenants
+Next, we ....
+```{r echo = FALSE}
+# create histogram of average rent burden
+hist(hcv$rent_burden, breaks = "FD", 
+     col=rgb(0.8,0.3,0.6,0.5), xlim = c(0.5, 2.5), ylim=c(0,300),
+     main = "Average Rent Burden",
+     xlab = "Ratio of Pre-Subsidy Rent to Household Monthly Income", ylab = "Number of HCV Programs",border=F) 
+```
