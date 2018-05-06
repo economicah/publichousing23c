@@ -92,9 +92,21 @@ axis(side=1, at=seq(0,260,10))
 ### Average Rent Burden of Public Housing Authority Tenants
 Next, we ....
 ```{r echo = FALSE}
-# create histogram of average rent burden
 hist(hcv$rent_burden, breaks = "FD", 
      col=rgb(0.8,0.3,0.6,0.5), xlim = c(0.5, 2.5), ylim=c(0,300),
      main = "Average Rent Burden",
      xlab = "Ratio of Pre-Subsidy Rent to Household Monthly Income", ylab = "Number of HCV Programs",border=F) 
 ```
+### Average Months Waiting for a Housing Choice Voucher
+We then...
+```{r echo = FALSE}
+hist(hcv$months_waiting, breaks = "FD", prob = TRUE,
+     ylim = c(0,.04),
+     col=rgb(0.2,0.8,0.5,0.5),border=F,
+     main="Time Spent Waiting for a Home",
+     xlab="Average Months",ylab="Proportion of HCV Programs",xaxt="n")
+axis(side=1, at=seq(0,200,10))
+a <- 1/mean(hcv$months_waiting, na.rm = TRUE)
+curve(dexp(x, a), add = TRUE)
+```
+It makes sense that an exponential curve fits "number of months waiting" very well. This curve arises when examining the length of time between events in Poisson processes. 
