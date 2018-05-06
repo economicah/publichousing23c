@@ -64,7 +64,7 @@ hcv <- mutate(hcv, rent_burden  = total_rent/income_monthly)
 ## Introduction
 < insert brief intro about what we did (from our one-page handout) >
 
-### Households by Region
+### Households Receiving Subsidized Housing by Region
 We first decided to look at the number of households by census region, and display the porportion of female heads of household to male heads of household. As you can see, across all regions, the majority of households receiving subsidized housing are headed by females.
 
 ```{r echo=FALSE}
@@ -81,4 +81,32 @@ ggplot(data = hcv_collapse_melt, aes(x = reorder(region, -value), y = value,
 ```
 
 ### Total Compensation of Public Housing Authority Executives
-Next, we looked at the distribution 
+Next, we looked at the distribution of the maximum Total Compensation <will write story after putting in all graphics>
+```{r echo=FALSE}
+hist(hcv$Total.Compensation/1000, breaks = "FD", 
+     col=rgb(0.1,0.5,0.8,0.5), main = "Earnings of the Top-Paid Employee at\n every Public Housing Authority",
+     xlab = "Total Compensation (in thousands of dollars)", ylab = "Number of HCV Programs",las=1,xaxt="n",border=F,
+     xlim = c(0, 260), ylim=c(0,300))
+axis(side=1, at=seq(0,260,10))
+```
+### Average Rent Burden of Public Housing Authority Tenants
+Next, we ....
+```{r echo = FALSE}
+hist(hcv$rent_burden, breaks = "FD", 
+     col=rgb(0.8,0.3,0.6,0.5), xlim = c(0.5, 2.5), ylim=c(0,300),
+     main = "Average Rent Burden",
+     xlab = "Ratio of Pre-Subsidy Rent to Household Monthly Income", ylab = "Number of HCV Programs",border=F) 
+```
+### Average Months Waiting for a Housing Choice Voucher
+We then...
+```{r echo = FALSE}
+hist(hcv$months_waiting, breaks = "FD", prob = TRUE,
+     ylim = c(0,.04),
+     col=rgb(0.2,0.8,0.5,0.5),border=F,
+     main="Time Spent Waiting for a Home",
+     xlab="Average Months",ylab="Proportion of HCV Programs",xaxt="n")
+axis(side=1, at=seq(0,200,10))
+a <- 1/mean(hcv$months_waiting, na.rm = TRUE)
+curve(dexp(x, a), add = TRUE)
+```
+It makes sense that an exponential curve fits "number of months waiting" very well. This curve arises when examining the length of time between events in Poisson processes. 
