@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+#NOTE TO USER: CHANGE TWO FILE PATHS (line 29 and 44) BEFORE PROCEEDING
 ```
 
 ```{r include=FALSE, message=FALSE}
@@ -63,7 +64,7 @@ hcv <- mutate(hcv, rent_burden  = total_rent/income_monthly)
 ## Introduction
 < insert brief intro about what we did (from our one-page handout) >
 
-# Households by Region
+### Households by Region
 We first decided to look at the number of households by census region, and display the porportion of female heads of household to male heads of household. As you can see, across all regions, the majority of households receiving subsidized housing are headed by females.
 
 ```{r echo=FALSE}
