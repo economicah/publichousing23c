@@ -62,7 +62,8 @@ hcv <- mutate(hcv, rent_burden  = total_rent/income_monthly)
 ## Introduction
 < insert brief intro about what we did (from our one-page handout) >
 
-
+# Households by Region
+We first decided to look at the number of households by census region, and display the porportion of female heads of household to male heads of household. As you can see, across all regions, the majority of households receiving subsidized housing are headed by females.
 ```{r echo=FALSE}
 hcv_collapse <- summaryBy(num_male+num_fem~region,data=hcv,FUN=sum,na.rm=TRUE)
 hcv_collapse_melt <-melt(hcv_collapse,id.var="region")
