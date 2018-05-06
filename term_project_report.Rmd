@@ -9,25 +9,23 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r include = FALSE}
-#install.packages("reshape2")
-library(reshape2)
-#install.packages("doBy")
-library(doBy)
-#install.packages("ggplot2")
-library(ggplot2)
-#install.packages("dplyr")
-library(dplyr)
-#install.packages("noncensus")
-library(noncensus)
-#install.packages("ggmap")
-library(ggmap)
-#install.packages("tidyr")
-library(tidyr)
-#install.packages("stats4")
-library(stats4)
+```{r include=FALSE, message=FALSE}
+if (!require(reshape2)) install.packages("reshape2",dependencies=TRUE)
+if (!require(doBy)) install.packages("doBy",dependencies=TRUE)
+if (!require(ggplot2)) install.packages("ggplot2",dependencies=TRUE)
+if (!require(dplyr)) install.packages("dplyr",dependencies=TRUE)
+if (!require(noncensus)) install.packages("noncensus",dependencies=TRUE)
+if (!require(tidyr)) install.packages("tidyr",dependencies=TRUE)
+require(reshape2)
+require(doBy)
+require(ggplot2)
+require(dplyr)
+require(noncensus)
+require(tidyr)
+```
 
-pha <- read.csv("PHA_2014.csv"); head(pha) 
+```{r include = FALSE}
+pha <- read.csv("~/Desktop/Term project/PHA_2014.csv"); head(pha) 
 pha[pha == -1] <- NA
 pha[pha == -4] <- NA
 pha[pha == -5] <- NA
@@ -39,7 +37,10 @@ hcv$region <- as.character(hcv$region)
 hcv$region[is.na(hcv$region)] <- "Island"
 hcv$region <- as.factor(hcv$region)
 table(hcv$region)
-salaries <- read.csv("2014EXEC_COMP.csv"); head(salaries)
+```
+
+```{r, include = FALSE}
+salaries <- read.csv("~/Desktop/Term project/2014EXEC_COMP.csv"); head(salaries)
 strip_dol <- function(x) as.numeric((gsub("\\,", "", gsub("\\$", "", x))))
 colnames(salaries)
 salaries[,4:10] <- sapply(salaries[,4:10], strip_dol)
@@ -64,6 +65,7 @@ hcv <- mutate(hcv, rent_burden  = total_rent/income_monthly)
 
 # Households by Region
 We first decided to look at the number of households by census region, and display the porportion of female heads of household to male heads of household. As you can see, across all regions, the majority of households receiving subsidized housing are headed by females.
+
 ```{r echo=FALSE}
 hcv_collapse <- summaryBy(num_male+num_fem~region,data=hcv,FUN=sum,na.rm=TRUE)
 hcv_collapse_melt <-melt(hcv_collapse,id.var="region")
