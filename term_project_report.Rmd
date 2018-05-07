@@ -180,13 +180,15 @@ hist(hcv$rent_burden, breaks = "FD",
      xlab = "Ratio of Pre-Subsidy Rent to Household Monthly Income", ylab = "Number of HCV Programs",border=F) 
 ```
 
-### Geographical visualization
-```{r echo = FALSE, results = "asis", message = FALSE, warning = FALSE}
+### Geographical visualization  
+We then overlayed rent burden on a map of the United States to better visualize the spread. We did this in two ways: 1) overlaying the mean rent burden by state (shown here) and 2) overlaying each individual PHA's rent burden across the US (shown in original R script).
+```{r echo=FALSE}
 hcv_state <- hcv %>% group_by(states) %>% summarise(mean_rb = mean(rent_burden, na.rm = TRUE))
 hcv_state <- hcv_state %>% separate(states, c("abbrev", "state_name"), " ", 
                                     remove = TRUE, fill = "right", extra = "merge")
 hcv_state <- mutate(hcv_state, state = tolower(state_name))
 hcv_state <- hcv_state[,3:4]
+
 map <- map_data("state")
 ggplot(hcv_state, aes(fill = mean_rb)) + 
   geom_map(aes(map_id = state), map = map) + 
@@ -202,8 +204,9 @@ ggplot(hcv_state, aes(fill = mean_rb)) +
         axis.title.x=element_blank(),
         plot.title = element_text(hjust = 0.5))
 ```
-<br>
-## Average Months Waiting for a Housing Choice Voucher  
+
+
+## Average Months Waiting for a Housing Choice Voucher
 ### Distribution
 Next we looked at xyz
 
@@ -252,7 +255,7 @@ chisq_apa(chisq.test(hcv$mw_bin, hcv$poverty_area))
 
 There is about a 1% chance that the observed contingency table arose by chance. Logically this makes sense. Much fewer HCV programs located in poorer places (poverty_area = TRUE) experience short wait times (0-6 months) than we would expect, but many more experience wait times in every other bucket than we would expect if wait time was random. Many more HCV programs than we would expect in non-poor areas experience short wait times, but many fewer experience wait times in every other bucket.
 <br><br><br><br>
-Then, we looked at the significane of the difference in mean average waiting time of poor areas vs non-poor areas by conducting a permutation test:
+Then, we looked at the significance of the difference in mean average waiting time of poor areas vs non-poor areas by conducting a permutation test:
 <br>
 ```{r echo = FALSE, message = FALSE}
 PoorInd <- which(hcv$poverty_area)
