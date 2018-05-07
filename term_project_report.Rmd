@@ -215,6 +215,7 @@ ggplot(hcv_state, aes(fill = mean_rb)) +
         plot.title = element_text(hjust = 0.5))
 ```
 
+We found it interesting that Georgia has a high mean rent burden! And you can see that the West Coast and Northeast states also have a relatively high mean rent burden (not as high as Georgia). The MidWest appears to have a lower mean rent burden, but this could also be due to the low data density in that area (as you can see on the other map produced in the Rscript).
 
 ## Average Months Waiting for a Housing Choice Voucher
 ### Distribution
