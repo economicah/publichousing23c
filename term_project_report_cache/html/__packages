@@ -1,0 +1,11 @@
+base
+reshape2
+doBy
+ggplot2
+dplyr
+noncensus
+tidyr
+knitr
+kableExtra
+apa
+bindrcpp

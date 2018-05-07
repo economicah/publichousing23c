@@ -260,8 +260,6 @@ head(diff)
 hist(diff)
 abline(v=Obs, col = "red") #far from the center of the distribution
 pvalue <- mean(diff > Obs); pvalue #pval of 0. Significant
-pvalue <- sum((diff >= Obs)-1)
-pvalue <- (sum(diff >= Obs)+1)/(N+1); pvalue 
 
 # Unexpected thing #1: We expected that being located in a high-poverty area would be associated
 # with LOWER executive pay. It would make sense that if a lot of the people in a town fall under
