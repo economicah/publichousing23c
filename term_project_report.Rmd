@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 #NOTE TO USER: CHANGE TWO FILE PATHS (line 29 and 44) BEFORE PROCEEDING
 ```
 
@@ -130,7 +130,7 @@ It makes sense that an exponential curve fits "number of months waiting" very we
 ### Relationship with poverty area
 Next, we used two methods to examine the relationship between "average months waiting" and whether or not the respective area was considered a "poverty area" (Census Bureau designates census tracts with a poverty rate >=20% as "poverty areas").
 
-1. First, we created a contingency table of "months waiting" categories crossed with "poverty areas"" (Census Bureau designates census tracts with a poverty rate >=20% as "poverty areas").
+First, we created a contingency table of "months waiting" categories crossed with "poverty areas"" (Census Bureau designates census tracts with a poverty rate >=20% as "poverty areas").
 
 ```{r echo = FALSE, results = "asis", message = FALSE}
 attach(hcv)
@@ -152,11 +152,51 @@ kable(pov_mo_tbl, "html", caption = "Observed Distribution of Average Months Wai
 kable(Expected, "html", caption = "Expected Distribution of Average Months Waiting per Poor and Non-poor Areas") %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F, position = "float_left") %>% add_header_above(c("Average Months Waiting" = 1, "Poverty Area" = 2))
 ```
+<br><br>
 Chi-square test:
 ```{r echo = FALSE, results = "asis", message = FALSE}
 chisq_apa(chisq.test(hcv$mw_bin, hcv$poverty_area))
 ```
 
 There is about a 1% chance that the observed contingency table arose by chance. Logically this makes sense. Much fewer HCV programs located in poorer places (poverty_area = TRUE) experience short wait times (0-6 months) than we would expect, but many more experience wait times in every other bucket than we would expect if wait time was random. Many more HCV programs than we would expect in non-poor areas experience short wait times, but many fewer experience wait times in every other bucket.
-***
-2. Then, we looked at the difference in mean average waiting time of poor areas vs non-poor areas. We did this both through a permutation test and a t.test. 
+<br><br><br><br>
+Then, we looked at the difference in mean average waiting time of poor areas vs non-poor areas. We did this both through a permutation test and a t.test. 
+<br>
+*Permutation Test*
+```{r echo = FALSE, message = FALSE}
+PoorInd <- which(hcv$poverty_area)
+mw <- hcv$months_waiting
+obs_mw <- mean(mw[PoorInd], na.rm = TRUE) - mean(mw[-PoorInd], na.rm = TRUE)
+```
+Observed difference in means: 
+```{r echo = FALSE, results = "asis", message = FALSE}
+obs_mw
+```
+
+```{r echo = FALSE, message = FALSE}
+N <- 10^5
+diffs <- numeric(N)
+for (i in 1:N) { 
+  scramble <- sample(hcv$poverty_area, length(hcv$poverty_area), replace = FALSE)
+  index <- which(scramble)
+  diffs[i] <- mean(mw[index],na.rm=TRUE)-mean(mw[-index],na.rm=TRUE)
+}
+```
+
+Histogram of permutation test, with observed difference displayed by the red line:
+```{r echo = FALSE, message = FALSE}
+hist(diffs, prob = TRUE)
+abline(v=obs_mw, col="red") #looks like our observed differenced falls within the distribution
+```
+<br><br><br><br><br>
+Permutation test p-value: 
+```{r echo = FALSE, results = "asis", message = FALSE}
+pvalue <- (sum(diffs >= obs_mw)+1)/(N+1); pvalue
+```
+<br>T-test:
+```{r echo = FALSE, results = "asis", message = FALSE}
+t_apa(t_test(hcv$months_waiting ~ hcv$poverty_area, hcv), format = "html", info = FALSE, print = TRUE)
+```
+<br><br>According to our permutation test, there's a 95% chance of the difference in mean waiting times between poor and non poor areas occurring by chance. However, according to the t-test, there's only a 12% chance of this occurring by chance. The permutation test is superior to the t-test and this difference in means is definitely not significant.
+<br><br><br>**need to add in how we can see two different results in this**
+ 
