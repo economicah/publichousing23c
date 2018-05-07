@@ -315,8 +315,15 @@ abline(v=obs_mw, col="red") #looks like our observed differenced falls within th
 pvalue <- (sum(diffs >= obs_mw)+1)/(N+1); pvalue 
 t.test(hcv$months_waiting ~ hcv$poverty_area)
 # According to our permutation test, there's a 95% chance of the difference in mean waiting times between poor and 
-# non poor areas occurring by chance. However, according to the t-test, there's only a 12% chance of this occurring by
-# chance. The permutation test is superior to the t-test and this difference in means is definitely not significant.
+# non poor areas occurring by chance. So richer areas don't continuously have much better wait times 
+# than poorer areas. 
+# Of note, according to the t-test, there's only a 12% chance of this occurring by
+# chance. The permutation test is superior to the t-test and this difference in means is 
+# definitely not significant.
+
+# You may notice that this result allegedly conflicts with our contingency table analysis several lines back.
+# However, here we're comparing differences in means. The non-significant permutation test suggests
+# richer areas don't continuously have 
 
 #------------------------------------------------------------
 #      ggplot with linear regression (#11 and #14)
