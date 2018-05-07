@@ -131,7 +131,7 @@ pvalue <- mean(diff > Obs); pvalue
 
 With a p-value of 0.001%, this difference is significant. However, we actually expected that being located in a high-poverty area would be associated with LOWER executive pay. It would make sense that if a lot of the people in a town fall under the poverty line, which is calculated at a national level, that cost of living in the area (rent, food, gas, etc) would be lower for everyone in the town. In addition, job opportunities are probably scarcer so wages are lower. We were surprised to find that executives in high poverty areas actually receive statistically significantly higher total compensation.  
 <br>
-We then explored the relationship between total compensation and racial minorities, as well as total comp and tenant income.<br>
+We then explored the relationship between total compensation and racial minorities, as well as total comp and tenant income.<br><br>
 **Total comp and racial minorities**
 <br>
 Positive correlation between Total Executive Compensation and Racial Minority:
@@ -148,7 +148,7 @@ ggplot(hcv, aes(x=pct_minority, y=Total.Compensation, color=pct_minority)) +
   theme(plot.title = element_text(hjust = 0.5))+scale_color_gradientn(colours = rainbow(5))
 ```
 <br>We did not expect that for each additonal percentage point minority in the HCV Program, executive compensation increases by $414, and it's statistically significant (per our linear regression)! We expected these things to be unrelated.
-<br>
+<br><br>
 **Total comp and tenant income**<br>
 Positive correlation between Total Executive Compensation and Tenant Income:
 ```{r echo = FALSE, results = "asis", message = FALSE, warning = FALSE}
@@ -169,7 +169,8 @@ ggplot(hcv_mainland, aes(x=hh_income, y=Total.Compensation),
 <br>As we expected, total compensation of PHA executives increases with tenant income.
 
 
-## Average Rent Burden of Public Housing Authority Tenants
+## Average Rent Burden of Public Housing Authority Tenants  
+### Distribution  
 Next, we examined the distribution of “rent burden” or the ratio of average monthly household income to average monthly pre-subsidy rent. Pre-subsidy refers to the sum of the household contribution and the HCV-contribution.
 
 ```{r echo = FALSE}
@@ -178,6 +179,32 @@ hist(hcv$rent_burden, breaks = "FD",
      main = "Average Rent Burden",
      xlab = "Ratio of Pre-Subsidy Rent to Household Monthly Income", ylab = "Number of HCV Programs",border=F) 
 ```
+
+### Geographical visualization  
+We then overlayed rent burden on a map of the United States to better visualize the spread. We did this in two ways: 1) overlaying the mean rent burden by state (shown here) and 2) overlaying each individual PHA's rent burden across the US (shown in original R script).
+```{r echo=FALSE}
+hcv_state <- hcv %>% group_by(states) %>% summarise(mean_rb = mean(rent_burden, na.rm = TRUE))
+hcv_state <- hcv_state %>% separate(states, c("abbrev", "state_name"), " ", 
+                                    remove = TRUE, fill = "right", extra = "merge")
+hcv_state <- mutate(hcv_state, state = tolower(state_name))
+hcv_state <- hcv_state[,3:4]
+
+map <- map_data("state")
+ggplot(hcv_state, aes(fill = mean_rb)) + 
+  geom_map(aes(map_id = state), map = map) + 
+  expand_limits(x = map$long, y = map$lat) +
+  scale_fill_gradient("Mean Rent\nBurden", low='grey', high='darkblue') + 
+  ggtitle("Mean Rent Burden by US state") +
+  coord_map(projection="mercator",xlim=c(-125, -66), ylim=c(25, 50)) +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        rect = element_blank(),
+        axis.title.y=element_blank(),
+        axis.title.x=element_blank(),
+        plot.title = element_text(hjust = 0.5))
+```
+
 
 ## Average Months Waiting for a Housing Choice Voucher
 ### Distribution
@@ -228,7 +255,7 @@ chisq_apa(chisq.test(hcv$mw_bin, hcv$poverty_area))
 
 There is about a 1% chance that the observed contingency table arose by chance. Logically this makes sense. Much fewer HCV programs located in poorer places (poverty_area = TRUE) experience short wait times (0-6 months) than we would expect, but many more experience wait times in every other bucket than we would expect if wait time was random. Many more HCV programs than we would expect in non-poor areas experience short wait times, but many fewer experience wait times in every other bucket.
 <br><br><br><br>
-Then, we looked at the significane of the difference in mean average waiting time of poor areas vs non-poor areas by conducting a permutation test:
+Then, we looked at the significance of the difference in mean average waiting time of poor areas vs non-poor areas by conducting a permutation test:
 <br>
 ```{r echo = FALSE, message = FALSE}
 PoorInd <- which(hcv$poverty_area)
