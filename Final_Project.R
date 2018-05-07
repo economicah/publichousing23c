@@ -321,9 +321,11 @@ t.test(hcv$months_waiting ~ hcv$poverty_area)
 # chance. The permutation test is superior to the t-test and this difference in means is 
 # definitely not significant.
 
-# You may notice that this result allegedly conflicts with our contingency table analysis several lines back.
-# However, here we're comparing differences in means. The non-significant permutation test suggests
-# richer areas don't continuously have 
+# You may notice that this result allegedly conflicts with our contingency table analysis several lines above.
+# The contingency table shows that richer areas are more likely to have shorter wait times
+# but they don't continuously have much better wait times in any other bucket. This aligns with our
+# permutation test, demonstrating permutation test demonstrates richer areas don't 
+# continuously have significantly shorter waiting periods overall. 
 
 #------------------------------------------------------------
 #      ggplot with linear regression (#11 and #14)
