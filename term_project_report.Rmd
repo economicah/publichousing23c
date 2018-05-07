@@ -215,11 +215,11 @@ ggplot(hcv_state, aes(fill = mean_rb)) +
         plot.title = element_text(hjust = 0.5))
 ```
 
-We found it interesting that Georgia has a high mean rent burden! And you can see that the West Coast and Northeast states also have a relatively high mean rent burden (not as high as Georgia). The MidWest appears to have a lower mean rent burden, but this could also be due to the low data density in that area (as you can see on the other map produced in the Rscript).  
-<br>
+We found it interesting that Georgia has a high mean rent burden! And you can see that the West Coast and Northeast states also have a relatively high mean rent burden (not as high as Georgia). The MidWest appears to have a lower mean rent burden, but this could also be due to the low data density in that area (as you can see on the other map produced in the Rscript).
+
 ## Average Months Waiting for a Housing Choice Voucher
 ### Distribution
-Next we looked at xyz
+Next, we looked at the distribution of “average months waiting”.
 
 ```{r echo = FALSE}
 hist(hcv$months_waiting, breaks = "FD", prob = TRUE,
@@ -291,7 +291,7 @@ pvalue <- (sum(diffs >= obs_mw)+1)/(N+1); pvalue
 ``````
 
 <br>According to our permutation test, there's a 95% chance of the difference in mean waiting times between poor and non poor areas occurring by chance. This difference in mean is not significant.
-<br><br><br>
-It is interesting that we found a relationship between "poverty area" and "months waiting"" when we performed a chi square test on the categories of "months waiting", but that a relationship does not seem to exist when we test the means for the continuous months_waiting variable. 
-The contingency table shows that poor areas with "very short" wait times (1-6 months) are under-observed in our data and nonpoor areas with "very short" wait times are over-observed. For the remainder of the categories, as wait time gets longer, we see the opposite, but to a smaller extent. That tells us that a relationship does exist between months_waiting and poverty_area, but it is not a linear one. Therefore, it is believable that our permutation test would not pick up on this "effect" when examining means and standard deviations as a whole.
+<br><br>
+It is interesting that we found a relationship between poverty_area and months_waiting when we #performed a chi square test on categories of months_waiting, but that a relationship does not seem to #exist when we test the means for the continuous months_waiting variable. 
+The contingency table shows that poor areas with "very short" wait times (1-6 months) are under-observed in our data and nonpoor areas with "very short" wait times are over-observed. For the remainder of the categories, as wait time gets longer, we see the opposite, but to a smaller extent. That tells us that a relationship does exist between months_waiting and poverty_area, but it is not a linear one. Therefore, it is believable that our permutation test would not pick up on this "effect" when examining means and standard deviations as a whole
  
