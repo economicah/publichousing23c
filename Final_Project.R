@@ -319,7 +319,7 @@ abline(v=obs_mw, col="red") #looks like our observed differenced falls within th
 pvalue <- (sum(diffs >= obs_mw)+1)/(N+1); pvalue 
 t.test(hcv$months_waiting ~ hcv$poverty_area)
 # According to our permutation test, there's a 95% chance of the difference in mean waiting times between poor and 
-# non poor areas occurring by change. However, according to the t-test, there's a 12% change of this occurring by
+# non poor areas occurring by chance. However, according to the t-test, there's only a 12% chance of this occurring by
 # chance. The permutation test is superior to the t-test and this difference in means is definitely not significant.
 
 #------------------------------------------------------------
