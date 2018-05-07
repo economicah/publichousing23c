@@ -94,9 +94,9 @@ ggplot(data = hcv_collapse_melt, aes(x = reorder(region, -value), y = value,
 
 ```
 
-## Total Compensation of Public Housing Authority Executives
-Next, we looked at the distribution of the maximum Total Compensation
-
+## Total Compensation of Public Housing Authority Executives  
+### Distribution
+Next, we looked at the distribution of the maximum Total Compensation.
 ```{r echo=FALSE}
 hist(hcv$Total.Compensation/1000, breaks = "FD", 
      col=rgb(0.1,0.5,0.8,0.5), main = "Earnings of the Top-Paid Employee at\n every Public Housing Authority",
@@ -105,6 +105,7 @@ hist(hcv$Total.Compensation/1000, breaks = "FD",
 axis(side=1, at=seq(0,260,10))
 ```
 
+### Relationships and Comparisons
 We then looked at the relationship between total compensation and poverty areas. We performed a permutation test on compensation of highest paid employee by whether the program was located in a high poverty area or not. 
 ```{r echo = FALSE, results = "asis", message = FALSE}
 PoorInd <- which(hcv$poverty_area)
@@ -129,8 +130,8 @@ pvalue <- mean(diff > Obs); pvalue
 ```
 
 With a p-value of 0.001%, this difference is significant. However, we actually expected that being located in a high-poverty area would be associated with LOWER executive pay. It would make sense that if a lot of the people in a town fall under the poverty line, which is calculated at a national level, that cost of living in the area (rent, food, gas, etc) would be lower for everyone in the town. In addition, job opportunities are probably scarcer so wages are lower. We were surprised to find that executives in high poverty areas actually receive statistically significantly higher total compensation.  
-<br><br>
-We then explored the relationship between total compensation and racial minorities, as well as total comp and tenant income.  
+<br>
+We then explored the relationship between total compensation and racial minorities, as well as total comp and tenant income.<br>
 **Total comp and racial minorities**
 <br>
 Positive correlation between Total Executive Compensation and Racial Minority:
@@ -147,7 +148,7 @@ ggplot(hcv, aes(x=pct_minority, y=Total.Compensation, color=pct_minority)) +
   theme(plot.title = element_text(hjust = 0.5))+scale_color_gradientn(colours = rainbow(5))
 ```
 <br>We did not expect that for each additonal percentage point minority in the HCV Program, executive compensation increases by $414, and it's statistically significant (per our linear regression)! We expected these things to be unrelated.
-
+<br>
 **Total comp and tenant income**<br>
 Positive correlation between Total Executive Compensation and Tenant Income:
 ```{r echo = FALSE, results = "asis", message = FALSE, warning = FALSE}
