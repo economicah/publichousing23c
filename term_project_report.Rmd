@@ -10,25 +10,57 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 #NOTE TO USER: CHANGE TWO FILE PATHS (line 29 and 44) BEFORE PROCEEDING
 ```
 
-```{r include=FALSE, message=FALSE}
-if (!require(reshape2)) install.packages("reshape2",dependencies=TRUE)
-if (!require(doBy)) install.packages("doBy",dependencies=TRUE)
-if (!require(ggplot2)) install.packages("ggplot2",dependencies=TRUE)
-if (!require(dplyr)) install.packages("dplyr",dependencies=TRUE)
-if (!require(noncensus)) install.packages("noncensus",dependencies=TRUE)
-if (!require(tidyr)) install.packages("tidyr",dependencies=TRUE)
-if (!require(knitr)) install.packages("knitr",dependencies=TRUE)
-if (!require(kableExtra)) install.packages("kableExtra",dependencies=TRUE)
-if (!require(apa)) install.packages("apa",dependencies=TRUE)
-require(reshape2)
-require(doBy)
-require(ggplot2)
-require(dplyr)
-require(noncensus)
-require(tidyr)
-require(knitr)
-require(kableExtra)
-require(apa)
+```{r eval=FALSE, message=FALSE, include=FALSE}
+if (!require(reshape2)) {
+  install.packages("reshape2",dependencies=TRUE)
+  require(reshape2)}
+if (!require(doBy)) {
+  install.packages("doBy",dependencies=TRUE)
+  require(doBy)}
+if (!require(ggplot2)) {
+  install.packages("ggplot2",dependencies=TRUE)
+  require(ggplot2)}
+if (!require(dplyr)) {
+  install.packages("dplyr",dependencies=TRUE)
+  require(dplyr)}
+if (!require(noncensus)) {
+  install.packages("noncensus",dependencies=TRUE)
+  require(noncensus)}
+if (!require(tidyr)) {
+  install.packages("tidyr",dependencies=TRUE)
+  require(tidyr)}
+if (!require(knitr)) {
+  install.packages("knitr",dependencies=TRUE)
+  require(knitr)}
+if (!require(kableExtra)) {
+  install.packages("kableExtra",dependencies=TRUE)
+  require(kableExtra)}
+  if (!require(apa)) {
+    install.packages("apa",dependencies=TRUE)
+    require(apa)}
+```
+
+```{r eval=FALSE, message=FALSE, include=FALSE}
+#install.packages("reshape2")
+library(reshape2)
+#install.packages("doBy")
+library(doBy)
+#install.packages("ggplot2")
+library(ggplot2)
+#install.packages("dplyr")
+library(dplyr)
+#install.packages("noncensus")
+library(noncensus)
+#install.packages("ggmap")
+library(ggmap)
+install.packages("tidyr")
+library(tidyr)
+install.packages("knitr")
+library(knitr)
+install.packages("kableExtra")
+library(kableExtra)
+install.packages("apa")
+library(apa)
 ```
 
 ```{r include = FALSE}
