@@ -1,6 +1,6 @@
 ---
-title: "Term project"
-author: "Micah Villarreal and Liz Lawler"
+title: "Final project"
+author: "Liz Lawler and Micah Villarreal"
 date: "5/6/2018"
 output: html_document
 ---
@@ -69,7 +69,11 @@ hcv <- mutate(hcv, rent_burden  = total_rent/income_monthly)
 ```
 
 # Introduction
-< insert brief intro about what we did (from our one-page handout) >
+For our term project, we examined relationships found within two datasets.  
+1. PHA-“program type”-level  data about the state of subsidized housing in the United States in 2014, courtesy of the Department of Housing and Urban Development (HUD). Though HUD engages in several different housing assistance program types, we limited our analysis to Housing Choice Voucher (HCV) programs.  https://www.huduser.gov/portal/datasets/assthsg.html  
+2. PHA-person-level data about the compensation (salary, bonus and total compensation) of the top three paid employees at every public housing authority in the United States. We limited this data to the top paid individual at each PHA. https://www.hud.gov/program_offices/public_indian_housing/programs/pha_executive_compensation  
+<br>We constructed a PHA-level dataset with programmatic, geographic and compensation information about every HCV program in the United States, as well as rich demographic data about each program’s clients.
+ 
 
 ## Households Receiving Subsidized Housing by Region
 We first decided to look at the number of households by census region, and display the porportion of female heads of household to male heads of household. As you can see, across all regions, the majority of households receiving subsidized housing are headed by females. We were surprised to see how many households were headed by females *without* children. Further exploration could include examining the age distribution within these households; one hypothesis might be that the regions with households headed by females with no children also have a higher percentage of elderly people in public housing. 
@@ -104,16 +108,13 @@ axis(side=1, at=seq(0,260,10))
 We then looked at the relationship between total compensation and poverty areas. We performed a permutation test on compensation of highest paid employee by whether the program was located in a high poverty area or not. 
 ```{r echo = FALSE, results = "asis", message = FALSE}
 PoorInd <- which(hcv$poverty_area)
-tapply(hcv$Total.Compensation, hcv$poverty_area, mean, na.rm=TRUE)
 Total.Compensation <- hcv$Total.Compensation
 Obs <- mean(Total.Compensation[PoorInd],na.rm=TRUE)-mean(Total.Compensation[-PoorInd],na.rm=TRUE)
 ```
-Observed difference in means: 
+
+* Observed difference in means: 
 ```{r echo = FALSE, results = "asis", message = FALSE}
 Obs
-```
-
-```{r echo = FALSE, results = "asis", message = FALSE}
 N <-10000; diff <- numeric(N)
 for (i in 1:N) {
   scramble <- sample(hcv$poverty_area, length(hcv$poverty_area))
@@ -122,39 +123,12 @@ for (i in 1:N) {
 }
 ```
 
-Histogram of permutation test, with observed difference displayed by the red line:
-```{r echo = FALSE, results = "asis", message = FALSE}
-hist(diff)
-abline(v=Obs, col = "red")
-```
-Permutation test p-value: 
+* Permutation test p-value: 
 ```{r echo = FALSE, results = "asis", message = FALSE}
 pvalue <- mean(diff > Obs); pvalue 
 ```
 
-With a p-value of <0.001%, this difference is significant. However, we actually expected that being located in a high-poverty area would be associated with LOWER executive pay. It would make sense that if a lot of the people in a town fall under the poverty line, which is calculated at a national level, that cost of living in the area (rent, food, gas, etc) would be lower for everyone in the town. In addition, job opportunities are probably scarcer so wages are lower. We were surprised to find that executives in high poverty areas actually receive statistically significantly higher total compensation.
-<br>T-test:
-```{r echo = FALSE, results = "asis", message = FALSE}
-t_apa(t_test(hcv$months_waiting ~ hcv$poverty_area, hcv), format = "html", info = FALSE, print = TRUE)
-```
-<br><br>According to our permutation test, there's a 95% chance of the difference in mean waiting times
-pvalue <- mean(diff > Obs); pvalue #pval of 0. Significant
-
-# Unexpected thing #1: We expected that being located in a high-poverty area would be associated
-# with LOWER executive pay. It would make sense that if a lot of the people in a town fall under
-# the poverty line, which is calculated at a national level, that cost of living in the area
-# (rent, food, gas, etc) would be lower for everyone in the town. In addition, job opportunities
-# are probably scarcer so wages are lower. We were surprised to find that executives in 
-# high poverty areas actually receive statistically significantly higher total compensation.
-
-# comparison with classical methods (req'd analysis #4)
-t.test(hcv$Total.Compensation~hcv$poverty_area)
-# the classical method (t.test) and the simulation method both result in a significant
-# pvalue; however, the permutation test returns a slightly higher p-value than the t.test;
-# the permutation test is a better method at demonstrating the significant relationship
-# between the two means
-```
-
+With a p-value of 0.001%, this difference is significant. However, we actually expected that being located in a high-poverty area would be associated with LOWER executive pay. It would make sense that if a lot of the people in a town fall under the poverty line, which is calculated at a national level, that cost of living in the area (rent, food, gas, etc) would be lower for everyone in the town. In addition, job opportunities are probably scarcer so wages are lower. We were surprised to find that executives in high poverty areas actually receive statistically significantly higher total compensation.
 
 ## Average Rent Burden of Public Housing Authority Tenants
 Next we looked at xyz
@@ -215,20 +189,16 @@ chisq_apa(chisq.test(hcv$mw_bin, hcv$poverty_area))
 
 There is about a 1% chance that the observed contingency table arose by chance. Logically this makes sense. Much fewer HCV programs located in poorer places (poverty_area = TRUE) experience short wait times (0-6 months) than we would expect, but many more experience wait times in every other bucket than we would expect if wait time was random. Many more HCV programs than we would expect in non-poor areas experience short wait times, but many fewer experience wait times in every other bucket.
 <br><br><br><br>
-Then, we looked at the difference in mean average waiting time of poor areas vs non-poor areas. We did this both through a permutation test and a t.test. 
+Then, we looked at the significane of the difference in mean average waiting time of poor areas vs non-poor areas by conducting a permutation test:
 <br>
-*Permutation Test*
 ```{r echo = FALSE, message = FALSE}
 PoorInd <- which(hcv$poverty_area)
 mw <- hcv$months_waiting
 obs_mw <- mean(mw[PoorInd], na.rm = TRUE) - mean(mw[-PoorInd], na.rm = TRUE)
 ```
-Observed difference in means: 
+* Observed difference in means: 
 ```{r echo = FALSE, results = "asis", message = FALSE}
 obs_mw
-```
-
-```{r echo = FALSE, message = FALSE}
 N <- 10^5
 diffs <- numeric(N)
 for (i in 1:N) { 
@@ -238,20 +208,11 @@ for (i in 1:N) {
 }
 ```
 
-Histogram of permutation test, with observed difference displayed by the red line:
-```{r echo = FALSE, message = FALSE}
-hist(diffs, prob = TRUE)
-abline(v=obs_mw, col="red") #looks like our observed differenced falls within the distribution
-```
-<br><br><br><br><br>
-Permutation test p-value: 
+* Permutation test p-value: 
 ```{r echo = FALSE, results = "asis", message = FALSE}
 pvalue <- (sum(diffs >= obs_mw)+1)/(N+1); pvalue
-```
-<br>T-test:
-```{r echo = FALSE, results = "asis", message = FALSE}
-t_apa(t_test(hcv$months_waiting ~ hcv$poverty_area, hcv), format = "html", info = FALSE, print = TRUE)
-```
-<br><br>According to our permutation test, there's a 95% chance of the difference in mean waiting times between poor and non poor areas occurring by chance. However, according to the t-test, there's only a 12% chance of this occurring by chance. The permutation test is superior to the t-test and this difference in means is definitely not significant.
+``````
+
+<br>According to our permutation test, there's a 95% chance of the difference in mean waiting times between poor and non poor areas occurring by chance. This difference in mean is not significant.
 <br><br><br>**need to add in how we can see two different results in this**
  
