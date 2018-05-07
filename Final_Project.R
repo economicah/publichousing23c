@@ -271,12 +271,16 @@ hist(diff)
 abline(v=Obs, col = "red") #far from the center of the distribution
 pvalue <- mean(diff > Obs); pvalue #pval of 0. Significant
 
+# this satisfies #9: a convincing demonstration of a relationship that might have been statistically 
+# significant but that turns out not to be so (see below for rationale)
+
 # Unexpected thing #1: We expected that being located in a high-poverty area would be associated
 # with LOWER executive pay. It would make sense that if a lot of the people in a town fall under
 # the poverty line, which is calculated at a national level, that cost of living in the area
 # (rent, food, gas, etc) would be lower for everyone in the town. In addition, job opportunities
 # are probably scarcer so wages are lower. We were surprised to find that executives in 
 # high poverty areas actually receive statistically significantly higher total compensation.
+
 
 # comparison with classical methods (req'd analysis #4)
 # statistic based on dist function (Req'd analysis #2)
@@ -324,7 +328,7 @@ for (i in 1:N) {
 }
 mean(diffs)
 hist(diffs, prob = TRUE)
-abline(v=obs_mw, col="red") #looks like our observed differenced falls within the distribution
+abline(v=obs_mw, col="red") #looks like our observed difference falls within the distribution
 pvalue <- (sum(diffs >= obs_mw)+1)/(N+1); pvalue 
 t.test(hcv$months_waiting ~ hcv$poverty_area)
 # According to our permutation test, there's a 95% chance of the difference in mean waiting times between poor and 
@@ -333,6 +337,8 @@ t.test(hcv$months_waiting ~ hcv$poverty_area)
 # Of note, according to the t-test, there's only a 12% chance of this occurring by
 # chance. The permutation test is superior to the t-test and this difference in means is 
 # definitely not significant.
+# this is an example where permutation tests or other computational techniques clearly work better 
+# than classical methods (#12)
 
 # You may notice that this result allegedly conflicts with our contingency table analysis several lines above.
 # The contingency table shows that richer areas are more likely to have shorter wait times
@@ -359,10 +365,12 @@ ggplot(hcv, aes(x=pct_minority, y=Total.Compensation, color=pct_minority)) +
   geom_smooth(method = 'lm',color='black') + theme_bw() + 
   theme(plot.title = element_text(hjust = 0.5))+scale_color_gradientn(colours = rainbow(5))
 
+# this satisfies #8: a convincing demonstration of a relationship that might not have been statistically 
+# significant but that turns out to be so (see below for rationale)
+
 # Unexpected thing #2-- for each additonal percentage point minority in the HCV Program,
 # executive compensation increases by $414, and it's statistically significant! We expected
 # these things to be unrelated.
-
 
 # Another relationship demonstrated with ggplot, correlation, and linear regression
 # Total compensation of PHA exec as a function of tenant income
@@ -515,3 +523,7 @@ plot_mean
 
 # if you want to see the two maps together, please do the following:
 grid.arrange(plot_all, plot_mean, nrow=2)
+# We found it interesting that Georgia has a high mean rent burden! And you can see that the West Coast 
+# and Northeast states also have a relatively high mean rent burden (not as high as Georgia). 
+# The MidWest appears to have a lower mean rent burden, but this could also be due to the low data 
+# density in that area (as you can see in the top).
