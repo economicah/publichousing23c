@@ -1,3 +1,7 @@
+# Liz Lawler and Micah Villarreal
+# requirement #22 - team consists of exactly 2 people
+
+
 #-----------------------------------------------------------
 # ****************************MISC**************************
 #-----------------------------------------------------------
@@ -28,14 +32,16 @@ library(gridExtra)
 #-------------------------------------------------------------
 
 #------------------------------------------------------------
-#          Read in Data                 
+#         Read in Data
+#         Req'd Dataset standards (#1 - 4) 
 #------------------------------------------------------------
 
-# load public housing authority data from 2014
+# load public housing authority data from 2014 (dataframe - requirement #1)
 pha <- read.csv("PHA_2014.csv"); head(pha) 
 pha[pha == -1] <- NA
 pha[pha == -4] <- NA
 pha[pha == -5] <- NA
+# as at least 2 numeric and 2 categorical columns; thousands of rows (#4)
 
 # extract subset of only "Housing Choice Voucher" programs (program = 3)
 hcv <- filter(pha, pha$program == 3)
