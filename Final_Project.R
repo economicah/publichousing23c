@@ -340,11 +340,15 @@ t.test(hcv$months_waiting ~ hcv$poverty_area)
 # this is an example where permutation tests or other computational techniques clearly work better 
 # than classical methods (#12)
 
-# You may notice that this result allegedly conflicts with our contingency table analysis several lines above.
-# The contingency table shows that richer areas are more likely to have shorter wait times
-# but they don't continuously have much better wait times in any other bucket. This aligns with our
-# permutation test, demonstrating permutation test demonstrates richer areas don't 
-# continuously have significantly shorter waiting periods overall. 
+# It is interesting that we found a relationship between "poverty area" and "months waiting" when we 
+# performed a chi square test on the categories of "months waiting", but that a relationship does not 
+# seem to exist when we test the means for the continuous months_waiting variable. 
+# The contingency table shows that poor areas with "very short" wait times (1-6 months) are 
+# under-observed in our data and nonpoor areas with "very short" wait times are over-observed. For the 
+# remainder of the categories, as wait time gets longer, we see the opposite, but to a smaller extent. 
+# That tells us that a relationship does exist between months_waiting and poverty_area, but it is not 
+# a linear one. Therefore, it is believable that our permutation test would not pick up on this "effect"
+# when examining means and standard deviations as a whole.
 
 #------------------------------------------------------------
 #      ggplot with linear regression (#11 and #14)
