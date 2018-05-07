@@ -81,6 +81,7 @@ hcv <- mutate(hcv, rent_burden  = total_rent/income_monthly)
 # Introduction
 For our term project, we examined relationships found within two datasets.  
 1. PHA-“program type”-level  data about the state of subsidized housing in the United States in 2014, courtesy of the Department of Housing and Urban Development (HUD). Though HUD engages in several different housing assistance program types, we limited our analysis to Housing Choice Voucher (HCV) programs.  https://www.huduser.gov/portal/datasets/assthsg.html  
+For more information on what each variable in this dataset: https://www.huduser.gov/portal/datasets/pictures/dictionary_2017.pdf  
 2. PHA-person-level data about the compensation (salary, bonus and total compensation) of the top three paid employees at every public housing authority in the United States. We limited this data to the top paid individual at each PHA. https://www.hud.gov/program_offices/public_indian_housing/programs/pha_executive_compensation  
 <br>We constructed a PHA-level dataset with programmatic, geographic and compensation information about every HCV program in the United States, as well as rich demographic data about each program’s clients.
  
