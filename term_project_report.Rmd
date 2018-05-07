@@ -128,10 +128,48 @@ for (i in 1:N) {
 pvalue <- mean(diff > Obs); pvalue 
 ```
 
-With a p-value of 0.001%, this difference is significant. However, we actually expected that being located in a high-poverty area would be associated with LOWER executive pay. It would make sense that if a lot of the people in a town fall under the poverty line, which is calculated at a national level, that cost of living in the area (rent, food, gas, etc) would be lower for everyone in the town. In addition, job opportunities are probably scarcer so wages are lower. We were surprised to find that executives in high poverty areas actually receive statistically significantly higher total compensation.
+With a p-value of 0.001%, this difference is significant. However, we actually expected that being located in a high-poverty area would be associated with LOWER executive pay. It would make sense that if a lot of the people in a town fall under the poverty line, which is calculated at a national level, that cost of living in the area (rent, food, gas, etc) would be lower for everyone in the town. In addition, job opportunities are probably scarcer so wages are lower. We were surprised to find that executives in high poverty areas actually receive statistically significantly higher total compensation.  
+<br><br>
+We then explored the relationship between total compensation and racial minorities, as well as total comp and tenant income.  
+**Total comp and racial minorities**
+<br>
+Positive correlation between Total Executive Compensation and Racial Minority:
+```{r echo = FALSE, results = "asis", message = FALSE, warning = FALSE}
+cor(hcv$Total.Compensation, hcv$pct_minority, use = "complete.obs")
+```
+
+```{r echo = FALSE, results = "asis", message = FALSE, warning = FALSE}
+ggplot(hcv, aes(x=pct_minority, y=Total.Compensation, color=pct_minority)) + 
+  scale_x_continuous(name="Percent of Racial Minority Clients") + geom_point()+
+  scale_y_continuous(name="Largest 'Total Compensation' @ PHA",labels=scales::comma) +
+  ggtitle("Race and PHA Executive Compensation") +
+  geom_smooth(method = 'lm',color='black') + theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5))+scale_color_gradientn(colours = rainbow(5))
+```
+<br>We did not expect that for each additonal percentage point minority in the HCV Program, executive compensation increases by $414, and it's statistically significant (per our linear regression)! We expected these things to be unrelated.
+
+**Total comp and tenant income**<br>
+Positive correlation between Total Executive Compensation and Tenant Income:
+```{r echo = FALSE, results = "asis", message = FALSE, warning = FALSE}
+hcv_mainland <- filter(hcv, hcv$region != "Island")
+cor(hcv_mainland$Total.Compensation, hcv_mainland$hh_income, use = "complete.obs")
+```
+
+```{r echo = FALSE, results = "asis", message = FALSE, warning = FALSE}
+ggplot(hcv_mainland, aes(x=hh_income, y=Total.Compensation), 
+       group=region) + 
+  geom_point(aes(shape=region, color=region)) + 
+  scale_x_continuous(name="Average Tenant Household Income",labels=scales::comma) +
+  scale_y_continuous(name="Largest 'Total Compensation' @ PHA",labels=scales::comma) +
+  ggtitle("Relationship between Tenant Income\nand PHA Executive Compensation") +
+  stat_smooth(method = 'lm') + theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+<br>As we expected, total compensation of PHA executives increases with tenant income.
+
 
 ## Average Rent Burden of Public Housing Authority Tenants
-Next we looked at xyz
+Next, we examined the distribution of “rent burden” or the ratio of average monthly household income to average monthly pre-subsidy rent. Pre-subsidy refers to the sum of the household contribution and the HCV-contribution.
 
 ```{r echo = FALSE}
 hist(hcv$rent_burden, breaks = "FD", 
