@@ -7,10 +7,11 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
-#NOTE TO USER: CHANGE TWO FILE PATHS (line 29 and 44) BEFORE PROCEEDING
+#NOTE TO USER: CHANGE TWO FILE PATHS (line 45 and 60) BEFORE PROCEEDING
+#NOTE TO USER: RUN THE NEXT CHUNK (packages) BEFORE PRESSING KNIT
 ```
 
-```{r eval=FALSE, message=FALSE, include=FALSE}
+```{r packages, message=FALSE, include=FALSE}
 if (!require(reshape2)) {
   install.packages("reshape2",dependencies=TRUE)
   require(reshape2)}
@@ -38,29 +39,6 @@ if (!require(kableExtra)) {
   if (!require(apa)) {
     install.packages("apa",dependencies=TRUE)
     require(apa)}
-```
-
-```{r eval=FALSE, message=FALSE, include=FALSE}
-#install.packages("reshape2")
-library(reshape2)
-#install.packages("doBy")
-library(doBy)
-#install.packages("ggplot2")
-library(ggplot2)
-#install.packages("dplyr")
-library(dplyr)
-#install.packages("noncensus")
-library(noncensus)
-#install.packages("ggmap")
-library(ggmap)
-install.packages("tidyr")
-library(tidyr)
-install.packages("knitr")
-library(knitr)
-install.packages("kableExtra")
-library(kableExtra)
-install.packages("apa")
-library(apa)
 ```
 
 ```{r include = FALSE}
