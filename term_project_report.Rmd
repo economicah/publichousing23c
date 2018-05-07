@@ -17,12 +17,18 @@ if (!require(ggplot2)) install.packages("ggplot2",dependencies=TRUE)
 if (!require(dplyr)) install.packages("dplyr",dependencies=TRUE)
 if (!require(noncensus)) install.packages("noncensus",dependencies=TRUE)
 if (!require(tidyr)) install.packages("tidyr",dependencies=TRUE)
+if (!require(knitr)) install.packages("knitr",dependencies=TRUE)
+if (!require(kableExtra)) install.packages("kableExtra",dependencies=TRUE)
+if (!require(apa)) install.packages("apa",dependencies=TRUE)
 require(reshape2)
 require(doBy)
 require(ggplot2)
 require(dplyr)
 require(noncensus)
 require(tidyr)
+require(knitr)
+require(kableExtra)
+require(apa)
 ```
 
 ```{r include = FALSE}
@@ -62,11 +68,11 @@ hcv <- mutate(hcv, income_monthly  = hh_income/12)
 hcv <- mutate(hcv, rent_burden  = total_rent/income_monthly)
 ```
 
-## Introduction
+# Introduction
 < insert brief intro about what we did (from our one-page handout) >
 
-### Households Receiving Subsidized Housing by Region
-We first decided to look at the number of households by census region, and display the porportion of female heads of household to male heads of household. As you can see, across all regions, the majority of households receiving subsidized housing are headed by females.
+## Households Receiving Subsidized Housing by Region
+We first decided to look at the number of households by census region, and display the porportion of female heads of household to male heads of household. As you can see, across all regions, the majority of households receiving subsidized housing are headed by females. We were surprised to see how many households were headed by females *without* children. Further exploration could include examining the age distribution within these households; one hypothesis might be that the regions with households headed by females with no children also have a higher percentage of elderly people in public housing. 
 
 ```{r echo=FALSE}
 hcv_collapse <- summaryBy(num_male+num_fem+num_mother~region,data=hcv,FUN=sum,na.rm=TRUE)
@@ -84,8 +90,9 @@ ggplot(data = hcv_collapse_melt, aes(x = reorder(region, -value), y = value,
 
 ```
 
-### Total Compensation of Public Housing Authority Executives
-Next, we looked at the distribution of the maximum Total Compensation <will write story after putting in all graphics>
+## Total Compensation of Public Housing Authority Executives
+Next, we looked at the distribution of the maximum Total Compensation
+
 ```{r echo=FALSE}
 hist(hcv$Total.Compensation/1000, breaks = "FD", 
      col=rgb(0.1,0.5,0.8,0.5), main = "Earnings of the Top-Paid Employee at\n every Public Housing Authority",
@@ -93,24 +100,63 @@ hist(hcv$Total.Compensation/1000, breaks = "FD",
      xlim = c(0, 260), ylim=c(0,300))
 axis(side=1, at=seq(0,260,10))
 ```
-### Average Rent Burden of Public Housing Authority Tenants
-Next, we ....
+
+## Average Rent Burden of Public Housing Authority Tenants
+Next we looked at xyz
+
 ```{r echo = FALSE}
 hist(hcv$rent_burden, breaks = "FD", 
      col=rgb(0.8,0.3,0.6,0.5), xlim = c(0.5, 2.5), ylim=c(0,300),
      main = "Average Rent Burden",
      xlab = "Ratio of Pre-Subsidy Rent to Household Monthly Income", ylab = "Number of HCV Programs",border=F) 
 ```
-### Average Months Waiting for a Housing Choice Voucher
-We then...
+
+## Average Months Waiting for a Housing Choice Voucher
+### Distribution
+Next we looked at xyz
+
 ```{r echo = FALSE}
 hist(hcv$months_waiting, breaks = "FD", prob = TRUE,
-     ylim = c(0,.04),
      col=rgb(0.2,0.8,0.5,0.5),border=F,
      main="Time Spent Waiting for a Home",
      xlab="Average Months",ylab="Proportion of HCV Programs",xaxt="n")
 axis(side=1, at=seq(0,200,10))
 a <- 1/mean(hcv$months_waiting, na.rm = TRUE)
-curve(dexp(x, a), add = TRUE)
+curve(dexp(x,a), from = 0, add = TRUE)
 ```
+
 It makes sense that an exponential curve fits "number of months waiting" very well. This curve arises when examining the length of time between events in Poisson processes. 
+
+### Relationship with poverty area
+Next, we used two methods to examine the relationship between "average months waiting" and whether or not the respective area was considered a "poverty area" (Census Bureau designates census tracts with a poverty rate >=20% as "poverty areas").
+
+1. First, we created a contingency table of "months waiting" categories crossed with "poverty areas"" (Census Bureau designates census tracts with a poverty rate >=20% as "poverty areas").
+
+```{r echo = FALSE, results = "asis", message = FALSE}
+attach(hcv)
+hcv$mw_bin[hcv$months_waiting < 6] <- "0 to < 6 mo."
+hcv$mw_bin[hcv$months_waiting >= 6  & hcv$months_waiting < 12] <- "6 to < 12 mo."
+hcv$mw_bin[hcv$months_waiting >= 12  & hcv$months_waiting < 18] <- "12 to < 18 mo."
+hcv$mw_bin[hcv$months_waiting >= 18  & hcv$months_waiting < 24] <- "18 to < 24 mo."
+hcv$mw_bin[hcv$months_waiting >= 24  & hcv$months_waiting < 30] <- "24 to < 3 mo."
+hcv$mw_bin[hcv$months_waiting >= 30  & hcv$months_waiting < 36] <- "30 to < 36 mo."
+hcv$mw_bin[hcv$months_waiting >= 36] <- "36+ mo."
+detach(hcv)
+hcv$mw_bin <- factor(as.factor(hcv$mw_bin), levels = 
+                       c("0 to < 6 mo.", "6 to < 12 mo.", "12 to < 18 mo.",
+                         "18 to < 24 mo.", "24 to < 3 mo.", "30 to < 36 mo.",
+                         "36+ mo."))
+pov_mo_tbl <- table(hcv$mw_bin, hcv$poverty_area)
+Expected <- outer(rowSums(pov_mo_tbl), colSums(pov_mo_tbl))/sum(pov_mo_tbl)
+kable(pov_mo_tbl, "html", caption = "Observed Distribution of Average Months Waiting per Poor and Non-poor Areas") %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F, position = "float_left") %>% add_header_above(c("Average Months Waiting" = 1, "Poverty Area" = 2))
+kable(Expected, "html", caption = "Expected Distribution of Average Months Waiting per Poor and Non-poor Areas") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F, position = "float_left") %>% add_header_above(c("Average Months Waiting" = 1, "Poverty Area" = 2))
+```
+Chi-square test:
+```{r echo = FALSE, results = "asis", message = FALSE}
+chisq_apa(chisq.test(hcv$mw_bin, hcv$poverty_area))
+```
+
+There is about a 1% chance that the observed contingency table arose by chance. Logically this makes sense. Much fewer HCV programs located in poorer places (poverty_area = TRUE) experience short wait times (0-6 months) than we would expect, but many more experience wait times in every other bucket than we would expect if wait time was random. Many more HCV programs than we would expect in non-poor areas experience short wait times, but many fewer experience wait times in every other bucket.
+***
+2. Then, we looked at the difference in mean average waiting time of poor areas vs non-poor areas. We did this both through a permutation test and a t.test. 
