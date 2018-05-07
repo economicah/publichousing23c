@@ -101,6 +101,61 @@ hist(hcv$Total.Compensation/1000, breaks = "FD",
 axis(side=1, at=seq(0,260,10))
 ```
 
+We then looked at the relationship between total compensation and poverty areas. We performed a permutation test on compensation of highest paid employee by whether the program was located in a high poverty area or not. 
+```{r echo = FALSE, results = "asis", message = FALSE}
+PoorInd <- which(hcv$poverty_area)
+tapply(hcv$Total.Compensation, hcv$poverty_area, mean, na.rm=TRUE)
+Total.Compensation <- hcv$Total.Compensation
+Obs <- mean(Total.Compensation[PoorInd],na.rm=TRUE)-mean(Total.Compensation[-PoorInd],na.rm=TRUE)
+```
+Observed difference in means: 
+```{r echo = FALSE, results = "asis", message = FALSE}
+Obs
+```
+
+```{r echo = FALSE, results = "asis", message = FALSE}
+N <-10000; diff <- numeric(N)
+for (i in 1:N) {
+  scramble <- sample(hcv$poverty_area, length(hcv$poverty_area))
+  PoorInd <- which(scramble)
+  diff[i] <- mean(Total.Compensation[PoorInd],na.rm=TRUE)-mean(Total.Compensation[-PoorInd],na.rm=TRUE)
+}
+```
+
+Histogram of permutation test, with observed difference displayed by the red line:
+```{r echo = FALSE, results = "asis", message = FALSE}
+hist(diff)
+abline(v=Obs, col = "red")
+```
+Permutation test p-value: 
+```{r echo = FALSE, results = "asis", message = FALSE}
+pvalue <- mean(diff > Obs); pvalue 
+```
+
+With a p-value of <0.001%, this difference is significant. However, we actually expected that being located in a high-poverty area would be associated with LOWER executive pay. It would make sense that if a lot of the people in a town fall under the poverty line, which is calculated at a national level, that cost of living in the area (rent, food, gas, etc) would be lower for everyone in the town. In addition, job opportunities are probably scarcer so wages are lower. We were surprised to find that executives in high poverty areas actually receive statistically significantly higher total compensation.
+<br>T-test:
+```{r echo = FALSE, results = "asis", message = FALSE}
+t_apa(t_test(hcv$months_waiting ~ hcv$poverty_area, hcv), format = "html", info = FALSE, print = TRUE)
+```
+<br><br>According to our permutation test, there's a 95% chance of the difference in mean waiting times
+pvalue <- mean(diff > Obs); pvalue #pval of 0. Significant
+
+# Unexpected thing #1: We expected that being located in a high-poverty area would be associated
+# with LOWER executive pay. It would make sense that if a lot of the people in a town fall under
+# the poverty line, which is calculated at a national level, that cost of living in the area
+# (rent, food, gas, etc) would be lower for everyone in the town. In addition, job opportunities
+# are probably scarcer so wages are lower. We were surprised to find that executives in 
+# high poverty areas actually receive statistically significantly higher total compensation.
+
+# comparison with classical methods (req'd analysis #4)
+t.test(hcv$Total.Compensation~hcv$poverty_area)
+# the classical method (t.test) and the simulation method both result in a significant
+# pvalue; however, the permutation test returns a slightly higher p-value than the t.test;
+# the permutation test is a better method at demonstrating the significant relationship
+# between the two means
+```
+
+
 ## Average Rent Burden of Public Housing Authority Tenants
 Next we looked at xyz
 
