@@ -1,5 +1,5 @@
 ---
-title: "Wait, no vouch-her!? I HUDly know her!"
+title: "Vouch-her!? I HUDly know her!"
 author: "Liz Lawler and Micah Villarreal"
 date: "5/6/2018"
 output: html_document
