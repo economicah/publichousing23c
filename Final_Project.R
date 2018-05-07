@@ -1,3 +1,7 @@
+# Liz Lawler and Micah Villarreal
+# requirement #22 - team consists of exactly 2 people
+
+
 #-----------------------------------------------------------
 # ****************************MISC**************************
 #-----------------------------------------------------------
@@ -28,14 +32,16 @@ library(gridExtra)
 #-------------------------------------------------------------
 
 #------------------------------------------------------------
-#          Read in Data                 
+#         Read in Data
+#         Req'd Dataset standards (#1 - 4) 
 #------------------------------------------------------------
 
-# load public housing authority data from 2014
+# load public housing authority data from 2014 (dataframe - requirement #1)
 pha <- read.csv("PHA_2014.csv"); head(pha) 
 pha[pha == -1] <- NA
 pha[pha == -4] <- NA
 pha[pha == -5] <- NA
+# as at least 2 numeric and 2 categorical columns; thousands of rows (#4)
 
 # extract subset of only "Housing Choice Voucher" programs (program = 3)
 hcv <- filter(pha, pha$program == 3)
@@ -64,6 +70,8 @@ salaries[,4:10] <- sapply(salaries[,4:10], strip_dol)
 
 # generate dataset of max salary for each PHA
 # this contributes to "Professional-looking software engineering (#10)"
+# this also can contribute to appropriate use of novel statistics (maximum; #13), although
+# we use it elsewhere in the analysis as well
 salaries_max <- salaries %>% group_by(PHA.Code) %>% top_n(1, Total.Compensation) %>% 
   distinct(salaries, PHA.Code, Total.Compensation, .keep_all = TRUE)
 # recode missing compensation data as NA rather than 0
@@ -109,6 +117,8 @@ hcv <- mutate(hcv, total_rent  = rent_per_month + spending_per_month)
 hcv <- mutate(hcv, income_monthly  = hh_income/12)
 #mean(hcv$income_monthly, na.rm = TRUE);min(hcv$income_monthly, na.rm = TRUE);max(hcv$income_monthly, na.rm = TRUE)
 
+# this can contribute to appropriate use of novel statistics (ratios; #13), although
+# we use it elsewhere in the analysis as well
 # add rent_burden as a new variable (total rent/monthly income)
 hcv <- mutate(hcv, rent_burden  = total_rent/income_monthly)
 #mean(hcv$rent_burden, na.rm = TRUE);min(hcv$rent_burden, na.rm = TRUE);max(hcv$rent_burden, na.rm = TRUE)
@@ -119,7 +129,8 @@ hcv <- mutate(hcv, rent_burden  = total_rent/income_monthly)
 #-------------------------------------------------------------
 
 #------------------------------------------------------------
-#      BARPLOT (Reqd Graphical Displays #1)
+#      STACKED BARPLOT (Reqd Graphical Displays #1)
+#      Graphical display different from class scripts (#19) 
 #------------------------------------------------------------
 
 # create data frame with total number of female heads of households and male head of households
@@ -188,6 +199,7 @@ curve(dexp(x,a), from = 0, add = TRUE)
 #------------------------------------------------------------
 #      Contingency table (Reqd Graphical Displays #4)
 #      Analysis of a contingency table (Reqd Analysis #3)
+#      Statistic based on dist function (Req'd analysis #2)
 #------------------------------------------------------------
 median(hcv$months_waiting, na.rm= TRUE)
 max(hcv$months_waiting, na.rm = TRUE)
@@ -259,6 +271,9 @@ hist(diff)
 abline(v=Obs, col = "red") #far from the center of the distribution
 pvalue <- mean(diff > Obs); pvalue #pval of 0. Significant
 
+# this satisfies #9: a convincing demonstration of a relationship that might have been statistically 
+# significant but that turns out not to be so (see below for rationale)
+
 # Unexpected thing #1: We expected that being located in a high-poverty area would be associated
 # with LOWER executive pay. It would make sense that if a lot of the people in a town fall under
 # the poverty line, which is calculated at a national level, that cost of living in the area
@@ -266,7 +281,9 @@ pvalue <- mean(diff > Obs); pvalue #pval of 0. Significant
 # are probably scarcer so wages are lower. We were surprised to find that executives in 
 # high poverty areas actually receive statistically significantly higher total compensation.
 
+
 # comparison with classical methods (req'd analysis #4)
+# statistic based on dist function (Req'd analysis #2)
 t.test(hcv$Total.Compensation~hcv$poverty_area)
 # the classical method (t.test) and the simulation method both result in a significant
 # pvalue; however, the permutation test returns a slightly higher p-value than the t.test;
@@ -311,12 +328,27 @@ for (i in 1:N) {
 }
 mean(diffs)
 hist(diffs, prob = TRUE)
-abline(v=obs_mw, col="red") #looks like our observed differenced falls within the distribution
+abline(v=obs_mw, col="red") #looks like our observed difference falls within the distribution
 pvalue <- (sum(diffs >= obs_mw)+1)/(N+1); pvalue 
 t.test(hcv$months_waiting ~ hcv$poverty_area)
 # According to our permutation test, there's a 95% chance of the difference in mean waiting times between poor and 
-# non poor areas occurring by chance. However, according to the t-test, there's only a 12% chance of this occurring by
-# chance. The permutation test is superior to the t-test and this difference in means is definitely not significant.
+# non poor areas occurring by chance. So richer areas don't continuously have much better wait times 
+# than poorer areas. 
+# Of note, according to the t-test, there's only a 12% chance of this occurring by
+# chance. The permutation test is superior to the t-test and this difference in means is 
+# definitely not significant.
+# this is an example where permutation tests or other computational techniques clearly work better 
+# than classical methods (#12)
+
+# It is interesting that we found a relationship between "poverty area" and "months waiting" when we 
+# performed a chi square test on the categories of "months waiting", but that a relationship does not 
+# seem to exist when we test the means for the continuous months_waiting variable. 
+# The contingency table shows that poor areas with "very short" wait times (1-6 months) are 
+# under-observed in our data and nonpoor areas with "very short" wait times are over-observed. For the 
+# remainder of the categories, as wait time gets longer, we see the opposite, but to a smaller extent. 
+# That tells us that a relationship does exist between months_waiting and poverty_area, but it is not 
+# a linear one. Therefore, it is believable that our permutation test would not pick up on this "effect"
+# when examining means and standard deviations as a whole.
 
 #------------------------------------------------------------
 #      ggplot with linear regression (#11 and #14)
@@ -337,10 +369,12 @@ ggplot(hcv, aes(x=pct_minority, y=Total.Compensation, color=pct_minority)) +
   geom_smooth(method = 'lm',color='black') + theme_bw() + 
   theme(plot.title = element_text(hjust = 0.5))+scale_color_gradientn(colours = rainbow(5))
 
+# this satisfies #8: a convincing demonstration of a relationship that might not have been statistically 
+# significant but that turns out to be so (see below for rationale)
+
 # Unexpected thing #2-- for each additonal percentage point minority in the HCV Program,
 # executive compensation increases by $414, and it's statistically significant! We expected
 # these things to be unrelated.
-
 
 # Another relationship demonstrated with ggplot, correlation, and linear regression
 # Total compensation of PHA exec as a function of tenant income
@@ -493,3 +527,7 @@ plot_mean
 
 # if you want to see the two maps together, please do the following:
 grid.arrange(plot_all, plot_mean, nrow=2)
+# We found it interesting that Georgia has a high mean rent burden! And you can see that the West Coast 
+# and Northeast states also have a relatively high mean rent burden (not as high as Georgia). 
+# The MidWest appears to have a lower mean rent burden, but this could also be due to the low data 
+# density in that area (as you can see in the top).
