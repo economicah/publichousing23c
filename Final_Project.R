@@ -70,6 +70,8 @@ salaries[,4:10] <- sapply(salaries[,4:10], strip_dol)
 
 # generate dataset of max salary for each PHA
 # this contributes to "Professional-looking software engineering (#10)"
+# this also can contribute to appropriate use of novel statistics (maximum; #13), although
+# we use it elsewhere in the analysis as well
 salaries_max <- salaries %>% group_by(PHA.Code) %>% top_n(1, Total.Compensation) %>% 
   distinct(salaries, PHA.Code, Total.Compensation, .keep_all = TRUE)
 # recode missing compensation data as NA rather than 0
@@ -115,6 +117,8 @@ hcv <- mutate(hcv, total_rent  = rent_per_month + spending_per_month)
 hcv <- mutate(hcv, income_monthly  = hh_income/12)
 #mean(hcv$income_monthly, na.rm = TRUE);min(hcv$income_monthly, na.rm = TRUE);max(hcv$income_monthly, na.rm = TRUE)
 
+# this can contribute to appropriate use of novel statistics (ratios; #13), although
+# we use it elsewhere in the analysis as well
 # add rent_burden as a new variable (total rent/monthly income)
 hcv <- mutate(hcv, rent_burden  = total_rent/income_monthly)
 #mean(hcv$rent_burden, na.rm = TRUE);min(hcv$rent_burden, na.rm = TRUE);max(hcv$rent_burden, na.rm = TRUE)
@@ -125,7 +129,8 @@ hcv <- mutate(hcv, rent_burden  = total_rent/income_monthly)
 #-------------------------------------------------------------
 
 #------------------------------------------------------------
-#      BARPLOT (Reqd Graphical Displays #1)
+#      STACKED BARPLOT (Reqd Graphical Displays #1)
+#      Graphical display different from class scripts (#19) 
 #------------------------------------------------------------
 
 # create data frame with total number of female heads of households and male head of households
@@ -194,6 +199,7 @@ curve(dexp(x,a), from = 0, add = TRUE)
 #------------------------------------------------------------
 #      Contingency table (Reqd Graphical Displays #4)
 #      Analysis of a contingency table (Reqd Analysis #3)
+#      Statistic based on dist function (Req'd analysis #2)
 #------------------------------------------------------------
 median(hcv$months_waiting, na.rm= TRUE)
 max(hcv$months_waiting, na.rm = TRUE)
@@ -273,6 +279,7 @@ pvalue <- mean(diff > Obs); pvalue #pval of 0. Significant
 # high poverty areas actually receive statistically significantly higher total compensation.
 
 # comparison with classical methods (req'd analysis #4)
+# statistic based on dist function (Req'd analysis #2)
 t.test(hcv$Total.Compensation~hcv$poverty_area)
 # the classical method (t.test) and the simulation method both result in a significant
 # pvalue; however, the permutation test returns a slightly higher p-value than the t.test;
