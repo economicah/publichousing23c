@@ -20,8 +20,6 @@ library(noncensus)
 library(ggmap)
 #install.packages("tidyr")
 library(tidyr)
-#install.packages("stats4")
-library(stats4)
 #install.packages(gridExtra)
 library(gridExtra)
 
